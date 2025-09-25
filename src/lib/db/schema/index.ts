@@ -6,7 +6,7 @@ export * from "./tasks";
 export * from "./time-blocks";
 export * from "./users";
 
-import { accounts, sessions, verificationTokens, authenticators } from "./auth";
+import { accounts, authenticators, sessions, verificationTokens } from "./auth";
 import { categories } from "./categories";
 import { tasks } from "./tasks";
 import { timeBlocks } from "./time-blocks";

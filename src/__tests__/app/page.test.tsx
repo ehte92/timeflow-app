@@ -50,8 +50,8 @@ describe("Home Page", () => {
     expect(signInLinks).toHaveLength(2); // One in header, one in main area
 
     // Verify the main action Sign In link exists (with button styling)
-    const mainSignInLink = signInLinks.find(link =>
-      link.getAttribute('data-slot') === 'button'
+    const mainSignInLink = signInLinks.find(
+      (link) => link.getAttribute("data-slot") === "button",
     );
     expect(mainSignInLink).toBeInTheDocument();
   });

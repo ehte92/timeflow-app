@@ -1,6 +1,6 @@
 import { CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/header";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (

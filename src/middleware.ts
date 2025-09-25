@@ -5,10 +5,8 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
 
   // Define route categories
-  const publicRoutes = ["/", "/auth/signin", "/auth/signup", "/auth/error"];
   const protectedRoutes = ["/dashboard", "/tasks", "/profile", "/settings"];
 
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isProtectedRoute = protectedRoutes.some((route) =>
     nextUrl.pathname.startsWith(route),
   );

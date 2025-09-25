@@ -1,10 +1,10 @@
 import {
+  integer,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
-  integer,
-  primaryKey,
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
 

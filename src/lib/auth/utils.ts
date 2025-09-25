@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { users } from "@/lib/db/schema/users";
-import { eq } from "drizzle-orm";
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);

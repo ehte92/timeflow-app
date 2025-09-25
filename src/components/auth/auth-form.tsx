@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,6 +50,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             setError(data.error || "Signup failed");
           }
         } catch (error) {
+          console.error("Signup error:", error);
           setError("An error occurred during signup");
         }
       } else {

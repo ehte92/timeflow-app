@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth-simple";
 import { Header } from "@/components/layout/header";
+import { auth } from "@/lib/auth/auth-simple";
 
 export default async function TestAuthPage() {
   const session = await auth();
