@@ -45,15 +45,10 @@ describe("Home Page", () => {
       screen.getByRole("link", { name: /get started/i }),
     ).toBeInTheDocument();
 
-    // Get all Sign In links and check that at least one exists
-    const signInLinks = screen.getAllByRole("link", { name: /sign in/i });
-    expect(signInLinks).toHaveLength(2); // One in header, one in main area
-
-    // Verify the main action Sign In link exists (with button styling)
-    const mainSignInLink = signInLinks.find(
-      (link) => link.getAttribute("data-slot") === "button",
-    );
-    expect(mainSignInLink).toBeInTheDocument();
+    // Verify the Sign In link exists
+    const signInLink = screen.getByRole("link", { name: /sign in/i });
+    expect(signInLink).toBeInTheDocument();
+    expect(signInLink.getAttribute("data-slot")).toBe("button");
   });
 
   it("should display progress bar at 100%", () => {
