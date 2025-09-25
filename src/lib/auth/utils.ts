@@ -9,12 +9,16 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function verifyPassword(
   password: string,
-  hashedPassword: string
+  hashedPassword: string,
 ): Promise<boolean> {
   return bcrypt.compare(password, hashedPassword);
 }
 
-export async function createUser(email: string, name: string, password: string) {
+export async function createUser(
+  email: string,
+  name: string,
+  password: string,
+) {
   const hashedPassword = await hashPassword(password);
 
   const newUser = await db

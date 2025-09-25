@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createUser, getUserByEmail } from "@/lib/auth/utils";
 
 export async function POST(request: NextRequest) {
@@ -8,14 +8,14 @@ export async function POST(request: NextRequest) {
     if (!email || !name || !password) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (password.length < 6) {
       return NextResponse.json(
         { error: "Password must be at least 6 characters long" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { error: "User already exists with this email" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -33,13 +33,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { message: "User created successfully", userId: user.id },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("Signup error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

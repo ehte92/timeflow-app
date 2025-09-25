@@ -13,7 +13,7 @@ export function UserMenu() {
     try {
       await signOut({
         callbackUrl: "/",
-        redirect: true
+        redirect: true,
       });
     } catch (error) {
       console.error("Sign out error:", error);

@@ -28,7 +28,8 @@ export default async function DashboardPage() {
                 🎉 Authentication Complete!
               </h3>
               <p className="text-blue-700 text-sm">
-                Your NextAuth.js integration is working perfectly with route protection.
+                Your NextAuth.js integration is working perfectly with route
+                protection.
               </p>
             </div>
 
@@ -37,17 +38,26 @@ export default async function DashboardPage() {
                 🔒 Route Protection Active
               </h3>
               <p className="text-green-700 text-sm">
-                Try accessing /dashboard without authentication - you'll be redirected to sign in.
+                Try accessing /dashboard without authentication - you'll be
+                redirected to sign in.
               </p>
             </div>
           </div>
 
           <div className="mt-6 p-4 bg-gray-50 rounded-md">
-            <h4 className="font-medium text-gray-900 mb-2">Session Information:</h4>
+            <h4 className="font-medium text-gray-900 mb-2">
+              Session Information:
+            </h4>
             <ul className="text-sm text-gray-600 space-y-1">
-              <li><strong>User ID:</strong> {session.user.id}</li>
-              <li><strong>Email:</strong> {session.user.email}</li>
-              <li><strong>Name:</strong> {session.user.name}</li>
+              <li>
+                <strong>User ID:</strong> {session.user.id}
+              </li>
+              <li>
+                <strong>Email:</strong> {session.user.email}
+              </li>
+              <li>
+                <strong>Name:</strong> {session.user.name}
+              </li>
             </ul>
           </div>
         </div>

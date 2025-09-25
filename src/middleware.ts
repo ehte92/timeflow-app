@@ -9,8 +9,8 @@ export default auth((req) => {
   const protectedRoutes = ["/dashboard", "/tasks", "/profile", "/settings"];
 
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-  const isProtectedRoute = protectedRoutes.some(route =>
-    nextUrl.pathname.startsWith(route)
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    nextUrl.pathname.startsWith(route),
   );
   const isAuthRoute = nextUrl.pathname.startsWith("/auth");
 

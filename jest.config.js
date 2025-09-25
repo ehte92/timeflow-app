@@ -15,8 +15,10 @@ const customJestConfig = {
     "!src/**/*.d.ts",
     "!src/**/index.ts",
   ],
-  moduleNameMapping: {
+  moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^next-auth/react$": "<rootDir>/src/__mocks__/next-auth-react.js",
+    "^next-auth$": "<rootDir>/src/__mocks__/next-auth.js",
   },
 };
 

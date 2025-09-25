@@ -38,15 +38,22 @@ describe("Home Page", () => {
     expect(screen.getByText("TypeScript Configuration")).toBeInTheDocument();
   });
 
-  it("should render action buttons", () => {
+  it("should render action links", () => {
     render(<Home />);
 
     expect(
-      screen.getByRole("button", { name: /start building/i }),
+      screen.getByRole("link", { name: /get started/i }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /view documentation/i }),
-    ).toBeInTheDocument();
+
+    // Get all Sign In links and check that at least one exists
+    const signInLinks = screen.getAllByRole("link", { name: /sign in/i });
+    expect(signInLinks).toHaveLength(2); // One in header, one in main area
+
+    // Verify the main action Sign In link exists (with button styling)
+    const mainSignInLink = signInLinks.find(link =>
+      link.getAttribute('data-slot') === 'button'
+    );
+    expect(mainSignInLink).toBeInTheDocument();
   });
 
   it("should display progress bar at 100%", () => {

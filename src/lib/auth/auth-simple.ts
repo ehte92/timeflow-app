@@ -6,12 +6,7 @@ import { users } from "@/lib/db/schema/users";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
-export const {
-  handlers,
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
     Credentials({
@@ -48,7 +43,7 @@ export const {
 
           const isPasswordValid = await bcrypt.compare(
             credentials.password as string,
-            user[0].password
+            user[0].password,
           );
 
           console.log("Password valid:", isPasswordValid);

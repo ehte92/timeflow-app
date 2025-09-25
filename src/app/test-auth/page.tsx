@@ -26,7 +26,8 @@ export default async function TestAuthPage() {
                   </>
                 ) : (
                   <>
-                    ❌ <strong>Not Authenticated</strong> - User is not signed in
+                    ❌ <strong>Not Authenticated</strong> - User is not signed
+                    in
                   </>
                 )}
               </p>
@@ -38,9 +39,15 @@ export default async function TestAuthPage() {
                   👤 User Information
                 </h3>
                 <div className="text-green-700 space-y-1">
-                  <p><strong>ID:</strong> {session.user.id}</p>
-                  <p><strong>Name:</strong> {session.user.name}</p>
-                  <p><strong>Email:</strong> {session.user.email}</p>
+                  <p>
+                    <strong>ID:</strong> {session.user.id}
+                  </p>
+                  <p>
+                    <strong>Name:</strong> {session.user.name}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {session.user.email}
+                  </p>
                 </div>
               </div>
             )}
@@ -50,8 +57,18 @@ export default async function TestAuthPage() {
                 🧪 Test Cases
               </h3>
               <div className="text-amber-700 space-y-2">
-                <p>• Try accessing <code className="bg-amber-100 px-1 rounded">/dashboard</code> without authentication</p>
-                <p>• Try accessing <code className="bg-amber-100 px-1 rounded">/auth/signin</code> while authenticated</p>
+                <p>
+                  • Try accessing{" "}
+                  <code className="bg-amber-100 px-1 rounded">/dashboard</code>{" "}
+                  without authentication
+                </p>
+                <p>
+                  • Try accessing{" "}
+                  <code className="bg-amber-100 px-1 rounded">
+                    /auth/signin
+                  </code>{" "}
+                  while authenticated
+                </p>
                 <p>• Sign out and see the redirect behavior</p>
                 <p>• Refresh the page and verify session persistence</p>
               </div>
