@@ -24,11 +24,13 @@ function getDb() {
 
 // Create a proxy to lazily initialize the database connection
 export const db = new Proxy({} as ReturnType<typeof drizzle>, {
-  get(target, prop) {
+  get(_target, prop) {
     const database = getDb();
-    const value = (database as any)[prop];
-    return typeof value === 'function' ? value.bind(database) : value;
-  }
+    const value = (database as unknown as Record<string, unknown>)[
+      prop as string
+    ];
+    return typeof value === "function" ? value.bind(database) : value;
+  },
 });
 
 export type Database = typeof db;
