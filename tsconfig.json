@@ -29,5 +29,5 @@
     ".next/types/**/*.ts",
     "jest.setup.js"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "tests/e2e/**/*", "playwright.config.ts"]
 }
