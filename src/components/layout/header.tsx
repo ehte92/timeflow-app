@@ -28,6 +28,12 @@ export function Header() {
                 >
                   Dashboard
                 </Link>
+                <Link
+                  href="/dashboard/tasks"
+                  className="text-gray-700 hover:text-gray-900"
+                >
+                  Tasks
+                </Link>
                 <UserMenu />
               </div>
             ) : (
