@@ -16,7 +16,7 @@ const customJestConfig = {
   ],
   testMatch: [
     "**/__tests__/**/*.(test|spec).(js|jsx|ts|tsx)",
-    "**/*.(test|spec).(js|jsx|ts|tsx)"
+    "**/*.(test|spec).(js|jsx|ts|tsx)",
   ],
   collectCoverageFrom: [
     "src/**/*.{js,jsx,ts,tsx}",

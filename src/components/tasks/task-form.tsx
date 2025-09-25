@@ -24,7 +24,14 @@ const taskFormSchema = z.object({
   description: z.string().optional(),
   priority: z.enum(taskPriorityEnum),
   dueDate: z.string().optional(),
-  categoryId: z.string().transform((val) => val === "" ? undefined : val).optional().refine((val) => !val || z.string().uuid().safeParse(val).success, "Invalid category ID"),
+  categoryId: z
+    .string()
+    .transform((val) => (val === "" ? undefined : val))
+    .optional()
+    .refine(
+      (val) => !val || z.string().uuid().safeParse(val).success,
+      "Invalid category ID",
+    ),
 });
 
 type TaskFormData = z.infer<typeof taskFormSchema>;
@@ -135,7 +142,9 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
           <Select
             value={form.watch("priority")}
             onValueChange={(value) =>
-              form.setValue("priority", value as TaskPriority, { shouldValidate: true })
+              form.setValue("priority", value as TaskPriority, {
+                shouldValidate: true,
+              })
             }
             disabled={createTaskMutation.isPending}
           >

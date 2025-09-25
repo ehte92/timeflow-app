@@ -5,9 +5,10 @@
  * /tests/e2e/tasks.spec.ts
  */
 
-import { render, screen } from "@testing-library/react";
-import { TasksPageContent } from "@/components/tasks/tasks-page-content";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@testing-library/react";
+import type { ReactElement } from "react";
+import { TasksPageContent } from "@/components/tasks/tasks-page-content";
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({
@@ -44,7 +45,7 @@ afterEach(() => {
   jest.resetAllMocks();
 });
 
-function renderWithProviders(ui: React.ReactElement) {
+function renderWithProviders(ui: ReactElement) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false, gcTime: 0, staleTime: 0 },
@@ -53,19 +54,25 @@ function renderWithProviders(ui: React.ReactElement) {
   });
 
   return render(
-    <QueryClientProvider client={queryClient}>
-      {ui}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
   );
 }
 
-describe('Tasks Page Smoke Test', () => {
-  it('should render basic page structure without crashing', async () => {
+describe("Tasks Page Smoke Test", () => {
+  it("should render basic page structure without crashing", async () => {
     renderWithProviders(<TasksPageContent />);
 
-    expect(screen.getByRole('heading', { level: 1, name: /^tasks$/i })).toBeInTheDocument();
-    expect(screen.getByText(/manage your tasks and stay organized/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /add task/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /your tasks/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: /^tasks$/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/manage your tasks and stay organized/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /add task/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /your tasks/i }),
+    ).toBeInTheDocument();
   });
 });

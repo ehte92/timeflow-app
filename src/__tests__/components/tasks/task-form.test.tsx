@@ -1,7 +1,11 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {
+  mockFetch,
+  mockFetchError,
+  render,
+} from "@/__tests__/utils/test-utils";
 import { TaskForm } from "@/components/tasks/task-form";
-import { render, mockFetch, mockFetchError } from "@/__tests__/utils/test-utils";
 
 // Mock next/navigation
 const mockPush = jest.fn();
@@ -30,7 +34,9 @@ describe("TaskForm", () => {
     expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
     expect(screen.getByText(/priority/i)).toBeInTheDocument(); // Label text without for attribute
     expect(screen.getByLabelText(/due date/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /create task/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /create task/i }),
+    ).toBeInTheDocument();
   });
 
   it("should show validation error for empty title", async () => {
@@ -54,7 +60,11 @@ describe("TaskForm", () => {
       userId: "user-123",
     };
 
-    mockFetch({ task: mockTask, message: "Task created successfully" }, true, 201);
+    mockFetch(
+      { task: mockTask, message: "Task created successfully" },
+      true,
+      201,
+    );
 
     const onSuccess = jest.fn();
     render(<TaskForm onSuccess={onSuccess} />);
@@ -93,7 +103,11 @@ describe("TaskForm", () => {
       userId: "user-123",
     };
 
-    mockFetch({ task: mockTask, message: "Task created successfully" }, true, 201);
+    mockFetch(
+      { task: mockTask, message: "Task created successfully" },
+      true,
+      201,
+    );
 
     render(<TaskForm />);
 
@@ -126,11 +140,18 @@ describe("TaskForm", () => {
   it("should show loading state during submission", async () => {
     // Mock a slow response
     global.fetch = jest.fn().mockImplementation(
-      () => new Promise(resolve => setTimeout(() => resolve({
-        ok: true,
-        status: 201,
-        json: () => Promise.resolve({ task: {}, message: "Created" }),
-      }), 100))
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                status: 201,
+                json: () => Promise.resolve({ task: {}, message: "Created" }),
+              }),
+            100,
+          ),
+        ),
     );
 
     render(<TaskForm />);
@@ -145,14 +166,28 @@ describe("TaskForm", () => {
     expect(submitButton).toBeDisabled();
 
     // Wait for submission to complete
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: /create task/i })).not.toBeDisabled();
-    }, { timeout: 200 });
+    await waitFor(
+      () => {
+        expect(
+          screen.getByRole("button", { name: /create task/i }),
+        ).not.toBeDisabled();
+      },
+      { timeout: 200 },
+    );
   });
 
   it("should reset form after successful submission", async () => {
-    const mockTask = { id: "task-123", title: "Test Task", status: "todo", userId: "user-123" };
-    mockFetch({ task: mockTask, message: "Task created successfully" }, true, 201);
+    const mockTask = {
+      id: "task-123",
+      title: "Test Task",
+      status: "todo",
+      userId: "user-123",
+    };
+    mockFetch(
+      { task: mockTask, message: "Task created successfully" },
+      true,
+      201,
+    );
 
     render(<TaskForm />);
 
@@ -184,12 +219,23 @@ describe("TaskForm", () => {
   it("should not show cancel button when onCancel is not provided", () => {
     render(<TaskForm />);
 
-    expect(screen.queryByRole("button", { name: /cancel/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /cancel/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("should handle due date input", async () => {
-    const mockTask = { id: "task-123", title: "Test Task", status: "todo", userId: "user-123" };
-    mockFetch({ task: mockTask, message: "Task created successfully" }, true, 201);
+    const mockTask = {
+      id: "task-123",
+      title: "Test Task",
+      status: "todo",
+      userId: "user-123",
+    };
+    mockFetch(
+      { task: mockTask, message: "Task created successfully" },
+      true,
+      201,
+    );
 
     render(<TaskForm />);
 
@@ -200,8 +246,8 @@ describe("TaskForm", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      const expectedCall = (global.fetch as jest.Mock).mock.calls.find(call =>
-        call[0] === "/api/tasks" && call[1]?.method === "POST"
+      const expectedCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => call[0] === "/api/tasks" && call[1]?.method === "POST",
       );
       expect(expectedCall).toBeDefined();
 
@@ -215,11 +261,18 @@ describe("TaskForm", () => {
   it("should disable form fields during submission", async () => {
     // Mock a slow response
     global.fetch = jest.fn().mockImplementation(
-      () => new Promise(resolve => setTimeout(() => resolve({
-        ok: true,
-        status: 201,
-        json: () => Promise.resolve({ task: {}, message: "Created" }),
-      }), 100))
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                status: 201,
+                json: () => Promise.resolve({ task: {}, message: "Created" }),
+              }),
+            100,
+          ),
+        ),
     );
 
     render(<TaskForm />);
@@ -235,14 +288,26 @@ describe("TaskForm", () => {
     expect(screen.getByLabelText(/due date/i)).toBeDisabled();
 
     // Wait for submission to complete
-    await waitFor(() => {
-      expect(screen.getByLabelText(/task title/i)).not.toBeDisabled();
-    }, { timeout: 200 });
+    await waitFor(
+      () => {
+        expect(screen.getByLabelText(/task title/i)).not.toBeDisabled();
+      },
+      { timeout: 200 },
+    );
   });
 
   it("should handle priority selection correctly", async () => {
-    const mockTask = { id: "task-123", title: "Test Task", status: "todo", userId: "user-123" };
-    mockFetch({ task: mockTask, message: "Task created successfully" }, true, 201);
+    const mockTask = {
+      id: "task-123",
+      title: "Test Task",
+      status: "todo",
+      userId: "user-123",
+    };
+    mockFetch(
+      { task: mockTask, message: "Task created successfully" },
+      true,
+      201,
+    );
 
     render(<TaskForm />);
 

@@ -30,8 +30,8 @@ queryClient.setMutationDefaults(["auth"], {
   mutationFn: async () => {
     throw new Error("Authentication required");
   },
-  onError: (error: any) => {
-    if (error?.status === 401) {
+  onError: (error: unknown) => {
+    if ((error as { status?: number })?.status === 401) {
       // Handle 401 errors globally - redirect to login
       window.location.href = "/auth/signin";
     }
@@ -43,7 +43,8 @@ export const queryKeys = {
   tasks: {
     all: () => ["tasks"] as const,
     lists: () => ["tasks", "list"] as const,
-    list: (filters?: any) => ["tasks", "list", filters] as const,
+    list: (filters?: Record<string, unknown>) =>
+      ["tasks", "list", filters] as const,
     details: () => ["tasks", "detail"] as const,
     detail: (id: string) => ["tasks", "detail", id] as const,
   },

@@ -3,6 +3,7 @@
  */
 
 import { NextRequest } from "next/server";
+import type { Session } from "next-auth";
 import * as authModule from "@/lib/auth/auth-simple";
 
 // Mock the auth function
@@ -21,10 +22,12 @@ jest.mock("@/app/api/tasks/[taskId]/route", () => ({
   DELETE: jest.fn(),
 }));
 
-const mockAuth = authModule.auth as jest.MockedFunction<typeof authModule.auth>;
+const mockAuth = authModule.auth as unknown as jest.MockedFunction<
+  () => Promise<Session | null>
+>;
 
 // Mock session
-const mockSession = {
+const mockSession: Session = {
   user: {
     id: "user-123",
     name: "Test User",

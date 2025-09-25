@@ -1,27 +1,25 @@
-import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode } from "react";
-import {
-  useTasks,
-  useTask,
-  useCreateTask,
-  useUpdateTask,
-  useDeleteTask,
-  useToggleTaskStatus,
-} from "@/lib/query/hooks/tasks";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 import {
   createMockTask,
   createMockTasksResponse,
   mockFetch,
   mockFetchError,
 } from "@/__tests__/utils/test-utils";
+import {
+  useCreateTask,
+  useDeleteTask,
+  useTask,
+  useTasks,
+  useToggleTaskStatus,
+  useUpdateTask,
+} from "@/lib/query/hooks/tasks";
 
 // Create wrapper for hooks
 function createWrapper(queryClient: QueryClient) {
   return ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 }
 
@@ -83,7 +81,7 @@ describe("Task Query Hooks", () => {
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/tasks?status=completed&priority=high&limit=10"
+        "/api/tasks?status=completed&priority=high&limit=10",
       );
     });
 
@@ -151,7 +149,10 @@ describe("Task Query Hooks", () => {
   describe("useCreateTask", () => {
     it("should create task successfully", async () => {
       const newTask = createMockTask({ title: "New Task" });
-      const mockResponse = { task: newTask, message: "Task created successfully" };
+      const mockResponse = {
+        task: newTask,
+        message: "Task created successfully",
+      };
 
       mockFetch(mockResponse, true, 201);
 
@@ -227,7 +228,10 @@ describe("Task Query Hooks", () => {
 
     it("should update task successfully", async () => {
       const updatedTask = createMockTask({ id: taskId, title: "Updated Task" });
-      const mockResponse = { task: updatedTask, message: "Task updated successfully" };
+      const mockResponse = {
+        task: updatedTask,
+        message: "Task updated successfully",
+      };
 
       mockFetch(mockResponse);
 
@@ -238,7 +242,10 @@ describe("Task Query Hooks", () => {
       const updateData = { title: "Updated Task" };
 
       await act(async () => {
-        const response = await result.current.mutateAsync({ id: taskId, data: updateData });
+        const response = await result.current.mutateAsync({
+          id: taskId,
+          data: updateData,
+        });
         expect(response).toEqual(mockResponse);
       });
 
@@ -260,13 +267,16 @@ describe("Task Query Hooks", () => {
       });
 
       await act(async () => {
-        await result.current.mutateAsync({ id: taskId, data: { title: "Updated Task" } });
+        await result.current.mutateAsync({
+          id: taskId,
+          data: { title: "Updated Task" },
+        });
       });
 
       await waitFor(() => {
         expect(setQueryDataSpy).toHaveBeenCalledWith(
           ["tasks", "detail", taskId],
-          { task: updatedTask }
+          { task: updatedTask },
         );
       });
     });
@@ -317,7 +327,11 @@ describe("Task Query Hooks", () => {
   describe("useToggleTaskStatus", () => {
     it("should toggle task status from todo to completed", async () => {
       const task = createMockTask({ status: "todo" });
-      const updatedTask = { ...task, status: "completed", completedAt: new Date() };
+      const updatedTask = {
+        ...task,
+        status: "completed",
+        completedAt: new Date(),
+      };
       mockFetch({ task: updatedTask, message: "Task updated" });
 
       // Pre-populate cache with task list
@@ -342,7 +356,10 @@ describe("Task Query Hooks", () => {
     });
 
     it("should toggle task status from completed to todo", async () => {
-      const task = createMockTask({ status: "completed", completedAt: new Date() });
+      const task = createMockTask({
+        status: "completed",
+        completedAt: new Date(),
+      });
       const updatedTask = { ...task, status: "todo", completedAt: null };
       mockFetch({ task: updatedTask, message: "Task updated" });
 
@@ -363,7 +380,11 @@ describe("Task Query Hooks", () => {
 
     it("should perform optimistic update", async () => {
       const task = createMockTask({ status: "todo" });
-      const updatedTask = { ...task, status: "completed", completedAt: new Date() };
+      const updatedTask = {
+        ...task,
+        status: "completed",
+        completedAt: new Date(),
+      };
       mockFetch({ task: updatedTask, message: "Updated" });
 
       // Pre-populate cache with task list

@@ -1,13 +1,13 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TaskList } from "@/components/tasks/task-list";
 import {
-  render,
   createMockTask,
   createMockTasksResponse,
   mockFetch,
   mockFetchError,
+  render,
 } from "@/__tests__/utils/test-utils";
+import { TaskList } from "@/components/tasks/task-list";
 
 // Mock window.confirm
 const mockConfirm = jest.fn();
@@ -27,14 +27,14 @@ describe("TaskList", () => {
   it("should render loading state", () => {
     // Mock pending query
     global.fetch = jest.fn().mockImplementation(
-      () => new Promise(() => {}) // Never resolves
+      () => new Promise(() => {}), // Never resolves
     );
 
     render(<TaskList />);
 
     expect(screen.getByText(/loading tasks.../i)).toBeInTheDocument();
     // Just check for spinner div presence, not specific role
-    const spinnerDiv = document.querySelector('.animate-spin');
+    const spinnerDiv = document.querySelector(".animate-spin");
     expect(spinnerDiv).toBeInTheDocument();
   });
 
@@ -47,7 +47,9 @@ describe("TaskList", () => {
       expect(screen.getByText(/failed to fetch tasks/i)).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /try again/i }),
+    ).toBeInTheDocument();
   });
 
   it("should retry fetching when retry button is clicked", async () => {
@@ -150,13 +152,18 @@ describe("TaskList", () => {
     });
 
     // Mock status toggle API call
-    const updatedTask = { ...mockTask, status: "completed", completedAt: new Date() };
+    const updatedTask = {
+      ...mockTask,
+      status: "completed",
+      completedAt: new Date(),
+    };
     mockFetch({ task: updatedTask, message: "Task updated" });
 
     const statusButtons = screen.getAllByRole("button");
-    const statusButton = statusButtons.find(btn =>
-      btn.getAttribute('type') === 'button' &&
-      !btn.textContent?.includes('Trash')
+    const statusButton = statusButtons.find(
+      (btn) =>
+        btn.getAttribute("type") === "button" &&
+        !btn.textContent?.includes("Trash"),
     );
 
     if (statusButton) {
@@ -192,14 +199,16 @@ describe("TaskList", () => {
     mockFetch({ message: "Task deleted successfully" });
 
     const buttons = screen.getAllByRole("button");
-    const deleteButton = buttons.find(btn =>
-      btn.querySelector('svg')?.getAttribute('class')?.includes('trash')
+    const deleteButton = buttons.find((btn) =>
+      btn.querySelector("svg")?.getAttribute("class")?.includes("trash"),
     );
 
     if (deleteButton) {
       await user.click(deleteButton);
 
-      expect(mockConfirm).toHaveBeenCalledWith("Are you sure you want to delete this task?");
+      expect(mockConfirm).toHaveBeenCalledWith(
+        "Are you sure you want to delete this task?",
+      );
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith("/api/tasks/task-1", {
@@ -225,8 +234,8 @@ describe("TaskList", () => {
     });
 
     const buttons = screen.getAllByRole("button");
-    const deleteButton = buttons.find(btn =>
-      btn.querySelector('svg')?.getAttribute('class')?.includes('trash')
+    const deleteButton = buttons.find((btn) =>
+      btn.querySelector("svg")?.getAttribute("class")?.includes("trash"),
     );
 
     if (deleteButton) {
@@ -236,7 +245,7 @@ describe("TaskList", () => {
       expect(onDeleteTask).not.toHaveBeenCalled();
       expect(global.fetch).not.toHaveBeenCalledWith(
         expect.stringContaining("/api/tasks/"),
-        expect.objectContaining({ method: "DELETE" })
+        expect.objectContaining({ method: "DELETE" }),
       );
     }
   });
@@ -253,8 +262,8 @@ describe("TaskList", () => {
     });
 
     const buttons = screen.getAllByRole("button");
-    const editButton = buttons.find(btn =>
-      btn.querySelector('svg')?.getAttribute('class')?.includes('edit')
+    const editButton = buttons.find((btn) =>
+      btn.querySelector("svg")?.getAttribute("class")?.includes("edit"),
     );
 
     if (editButton) {
@@ -399,11 +408,19 @@ describe("TaskList", () => {
 
     // Mock slow mutation response
     global.fetch = jest.fn().mockImplementation(
-      () => new Promise(resolve => setTimeout(() => resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ task: mockTask, message: "Updated" }),
-      }), 100))
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                status: 200,
+                json: () =>
+                  Promise.resolve({ task: mockTask, message: "Updated" }),
+              }),
+            100,
+          ),
+        ),
     );
 
     const buttons = screen.getAllByRole("button");

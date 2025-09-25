@@ -14,6 +14,7 @@ interface TaskFilters {
   categoryId?: string;
   limit?: number;
   offset?: number;
+  [key: string]: unknown;
 }
 
 interface CreateTaskData {

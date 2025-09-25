@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth/auth-simple";
@@ -33,9 +33,7 @@ export default async function DashboardPage() {
           </h2>
           <div className="flex flex-wrap gap-3">
             <Link href="/dashboard/tasks?new=true">
-              <Button className="flex items-center gap-2">
-                ➕ New Task
-              </Button>
+              <Button className="flex items-center gap-2">➕ New Task</Button>
             </Link>
             <Link href="/dashboard/tasks">
               <Button variant="outline" className="flex items-center gap-2">
@@ -59,7 +57,8 @@ export default async function DashboardPage() {
                 </h3>
               </div>
               <p className="text-gray-600 text-sm">
-                Create, organize, and track your tasks with our powerful task manager.
+                Create, organize, and track your tasks with our powerful task
+                manager.
               </p>
               <div className="mt-4 text-sm text-blue-600 group-hover:text-blue-700">
                 Get started →
@@ -70,16 +69,12 @@ export default async function DashboardPage() {
           <div className="bg-white shadow rounded-lg p-6 h-full opacity-60">
             <div className="flex items-center mb-3">
               <div className="text-3xl mr-3">📁</div>
-              <h3 className="text-lg font-medium text-gray-500">
-                Categories
-              </h3>
+              <h3 className="text-lg font-medium text-gray-500">Categories</h3>
             </div>
             <p className="text-gray-500 text-sm">
               Organize your tasks with custom categories and tags.
             </p>
-            <div className="mt-4 text-sm text-gray-400">
-              Coming Soon
-            </div>
+            <div className="mt-4 text-sm text-gray-400">Coming Soon</div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6 h-full opacity-60">
@@ -92,24 +87,18 @@ export default async function DashboardPage() {
             <p className="text-gray-500 text-sm">
               Visualize your tasks and deadlines in a calendar format.
             </p>
-            <div className="mt-4 text-sm text-gray-400">
-              Coming Soon
-            </div>
+            <div className="mt-4 text-sm text-gray-400">Coming Soon</div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6 h-full opacity-60">
             <div className="flex items-center mb-3">
               <div className="text-3xl mr-3">📊</div>
-              <h3 className="text-lg font-medium text-gray-500">
-                Analytics
-              </h3>
+              <h3 className="text-lg font-medium text-gray-500">Analytics</h3>
             </div>
             <p className="text-gray-500 text-sm">
               Track your productivity with insightful analytics and reports.
             </p>
-            <div className="mt-4 text-sm text-gray-400">
-              Coming Soon
-            </div>
+            <div className="mt-4 text-sm text-gray-400">Coming Soon</div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6 h-full opacity-60">
@@ -122,9 +111,7 @@ export default async function DashboardPage() {
             <p className="text-gray-500 text-sm">
               Monitor time spent on tasks and improve your efficiency.
             </p>
-            <div className="mt-4 text-sm text-gray-400">
-              Coming Soon
-            </div>
+            <div className="mt-4 text-sm text-gray-400">Coming Soon</div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6 h-full opacity-60">
@@ -137,9 +124,7 @@ export default async function DashboardPage() {
             <p className="text-gray-500 text-sm">
               Set and track long-term goals and build productive habits.
             </p>
-            <div className="mt-4 text-sm text-gray-400">
-              Coming Soon
-            </div>
+            <div className="mt-4 text-sm text-gray-400">Coming Soon</div>
           </div>
         </div>
 
@@ -157,19 +142,33 @@ export default async function DashboardPage() {
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Email</dt>
-                  <dd className="text-sm text-gray-900">{session.user.email}</dd>
+                  <dd className="text-sm text-gray-900">
+                    {session.user.email}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">User ID</dt>
-                  <dd className="text-sm text-gray-900 font-mono">{session.user.id}</dd>
+                  <dd className="text-sm text-gray-900 font-mono">
+                    {session.user.id}
+                  </dd>
                 </div>
               </dl>
             </div>
             <div className="bg-green-50 p-4 rounded-md">
               <div className="flex items-center">
                 <div className="text-green-400 mr-3">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    role="img"
+                    aria-label="Success checkmark"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div>

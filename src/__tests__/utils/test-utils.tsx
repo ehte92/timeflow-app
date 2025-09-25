@@ -1,7 +1,8 @@
-import { render, type RenderOptions } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { type RenderOptions, render } from "@testing-library/react";
+import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
-import { type ReactElement, type ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 // Mock session data
 export const mockSession = {
@@ -33,19 +34,17 @@ function createTestQueryClient() {
 interface AllTheProvidersProps {
   children: ReactNode;
   queryClient?: QueryClient;
-  session?: any;
+  session?: Session | null;
 }
 
 function AllTheProviders({
   children,
   queryClient = createTestQueryClient(),
-  session = mockSession
+  session = mockSession,
 }: AllTheProvidersProps) {
   return (
     <SessionProvider session={session}>
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </SessionProvider>
   );
 }
@@ -53,22 +52,15 @@ function AllTheProviders({
 // Custom render function
 interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   queryClient?: QueryClient;
-  session?: any;
+  session?: Session | null;
 }
 
-const customRender = (
-  ui: ReactElement,
-  options: CustomRenderOptions = {}
-) => {
+const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
   const { queryClient, session, ...renderOptions } = options;
 
   return render(ui, {
     wrapper: (props) => (
-      <AllTheProviders
-        {...props}
-        queryClient={queryClient}
-        session={session}
-      />
+      <AllTheProviders {...props} queryClient={queryClient} session={session} />
     ),
     ...renderOptions,
   });
@@ -98,12 +90,12 @@ export const createMockTasksResponse = (tasks = [createMockTask()]) => ({
 });
 
 // API response mocks
-export const mockFetch = (response: any, ok = true, status = 200) => {
+export const mockFetch = (response: unknown, ok = true, status = 200) => {
   global.fetch = jest.fn().mockResolvedValue({
     ok,
     status,
     json: jest.fn().mockResolvedValue(response),
-  } as Response);
+  } as unknown as Response);
 };
 
 export const mockFetchError = (status = 500, message = "Server Error") => {
@@ -111,12 +103,12 @@ export const mockFetchError = (status = 500, message = "Server Error") => {
     ok: false,
     status,
     json: jest.fn().mockResolvedValue({ error: message }),
-  } as Response);
+  } as unknown as Response);
 };
 
 // Wait for React Query to settle
 export const waitForQueryToSettle = () =>
-  new Promise(resolve => setTimeout(resolve, 0));
+  new Promise((resolve) => setTimeout(resolve, 0));
 
 // Re-export everything from testing-library
 export * from "@testing-library/react";
