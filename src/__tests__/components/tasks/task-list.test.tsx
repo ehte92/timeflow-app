@@ -8,6 +8,7 @@ import {
   render,
 } from "@/__tests__/utils/test-utils";
 import { TaskList } from "@/components/tasks/task-list";
+import type { TaskStatus } from "@/lib/db/schema/tasks";
 
 // Mock window.confirm
 const mockConfirm = jest.fn();

@@ -3,6 +3,7 @@ import { type RenderOptions, render } from "@testing-library/react";
 import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import type { ReactElement, ReactNode } from "react";
+import type { Task } from "@/lib/db/schema/tasks";
 
 // Mock session data
 export const mockSession = {
@@ -67,12 +68,12 @@ const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
 };
 
 // Task test data factories
-export const createMockTask = (overrides = {}) => ({
+export const createMockTask = (overrides: Partial<Task> = {}): Task => ({
   id: "task-123",
   title: "Test Task",
   description: "Test Description",
-  priority: "medium" as const,
-  status: "todo" as const,
+  priority: "medium",
+  status: "todo",
   dueDate: null,
   completedAt: null,
   userId: "user-123",
