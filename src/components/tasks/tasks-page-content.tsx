@@ -7,10 +7,12 @@ import { Header } from "@/components/layout/header";
 import { TaskForm } from "@/components/tasks/task-form";
 import { TaskList } from "@/components/tasks/task-list";
 import { Button } from "@/components/ui/button";
+import type { Task } from "@/lib/db/schema/tasks";
 
 export function TasksPageContent() {
   const searchParams = useSearchParams();
   const [showForm, setShowForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   // Auto-open form if new=true query parameter is present
   useEffect(() => {
@@ -21,10 +23,21 @@ export function TasksPageContent() {
 
   const handleTaskCreated = () => {
     setShowForm(false);
+    setEditingTask(null);
   };
 
   const handleTaskDeleted = () => {
     // React Query will automatically refetch, no manual trigger needed
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setShowForm(true);
+  };
+
+  const handleCancelEdit = () => {
+    setShowForm(false);
+    setEditingTask(null);
   };
 
   return (
@@ -42,7 +55,14 @@ export function TasksPageContent() {
             </div>
 
             <Button
-              onClick={() => setShowForm(!showForm)}
+              onClick={() => {
+                if (showForm) {
+                  handleCancelEdit();
+                } else {
+                  setEditingTask(null);
+                  setShowForm(true);
+                }
+              }}
               className="flex items-center gap-2"
             >
               {showForm ? (
@@ -66,8 +86,9 @@ export function TasksPageContent() {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow p-6">
                 <TaskForm
+                  task={editingTask || undefined}
                   onSuccess={handleTaskCreated}
-                  onCancel={() => setShowForm(false)}
+                  onCancel={handleCancelEdit}
                 />
               </div>
             </div>
@@ -85,7 +106,10 @@ export function TasksPageContent() {
                   {/* Future: Add filters and sorting controls here */}
                 </div>
 
-                <TaskList onDeleteTask={handleTaskDeleted} />
+                <TaskList
+                  onEditTask={handleEditTask}
+                  onDeleteTask={handleTaskDeleted}
+                />
               </div>
             </div>
           </div>

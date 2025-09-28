@@ -15,8 +15,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { type TaskPriority, taskPriorityEnum } from "@/lib/db/schema/tasks";
-import { useCreateTask } from "@/lib/query/hooks/tasks";
+import {
+  type Task,
+  type TaskPriority,
+  taskPriorityEnum,
+} from "@/lib/db/schema/tasks";
+import { useCreateTask, useUpdateTask } from "@/lib/query/hooks/tasks";
 
 // Form validation schema
 const taskFormSchema = z.object({
@@ -37,22 +41,28 @@ const taskFormSchema = z.object({
 type TaskFormData = z.infer<typeof taskFormSchema>;
 
 interface TaskFormProps {
+  task?: Task; // If provided, form will be in edit mode
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
+export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
   const router = useRouter();
   const createTaskMutation = useCreateTask();
+  const updateTaskMutation = useUpdateTask();
+
+  const isEditing = !!task;
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      priority: "medium",
-      dueDate: "",
-      categoryId: undefined,
+      title: task?.title || "",
+      description: task?.description || "",
+      priority: task?.priority || "medium",
+      dueDate: task?.dueDate
+        ? new Date(task.dueDate).toISOString().slice(0, 16)
+        : "",
+      categoryId: task?.categoryId || undefined,
     },
   });
 
@@ -61,13 +71,26 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
       const payload = {
         ...data,
         description: data.description || undefined,
-        dueDate: data.dueDate || undefined,
+        dueDate: data.dueDate
+          ? new Date(data.dueDate).toISOString()
+          : undefined,
       };
 
-      await createTaskMutation.mutateAsync(payload);
+      if (isEditing && task) {
+        // Update existing task
+        await updateTaskMutation.mutateAsync({
+          id: task.id,
+          data: payload,
+        });
+      } else {
+        // Create new task
+        await createTaskMutation.mutateAsync(payload);
+      }
 
-      // Reset form
-      form.reset();
+      // Reset form only if creating a new task
+      if (!isEditing) {
+        form.reset();
+      }
 
       // Call success callback
       if (onSuccess) {
@@ -86,17 +109,23 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">Create New Task</h2>
+        <h2 className="text-lg font-semibold text-gray-900">
+          {isEditing ? "Edit Task" : "Create New Task"}
+        </h2>
         <p className="text-sm text-gray-600">
-          Fill in the details to create a new task.
+          {isEditing
+            ? "Update the task details below."
+            : "Fill in the details to create a new task."}
         </p>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {createTaskMutation.error && (
+        {(createTaskMutation.error || updateTaskMutation.error) && (
           <div className="rounded-md bg-red-50 p-4">
             <div className="text-sm text-red-800">
-              {createTaskMutation.error.message || "Failed to create task"}
+              {(isEditing ? updateTaskMutation.error : createTaskMutation.error)
+                ?.message ||
+                `Failed to ${isEditing ? "update" : "create"} task`}
             </div>
           </div>
         )}
@@ -110,7 +139,9 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
             placeholder="Enter task title"
             {...form.register("title")}
             aria-invalid={!!form.formState.errors.title}
-            disabled={createTaskMutation.isPending}
+            disabled={
+              createTaskMutation.isPending || updateTaskMutation.isPending
+            }
           />
           {form.formState.errors.title && (
             <p className="text-sm text-red-600">
@@ -127,7 +158,9 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
             placeholder="Enter task description (optional)"
             rows={4}
             {...form.register("description")}
-            disabled={createTaskMutation.isPending}
+            disabled={
+              createTaskMutation.isPending || updateTaskMutation.isPending
+            }
           />
           {form.formState.errors.description && (
             <p className="text-sm text-red-600">
@@ -146,7 +179,9 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
                 shouldValidate: true,
               })
             }
-            disabled={createTaskMutation.isPending}
+            disabled={
+              createTaskMutation.isPending || updateTaskMutation.isPending
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Select priority" />
@@ -172,7 +207,9 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
             id="dueDate"
             type="datetime-local"
             {...form.register("dueDate")}
-            disabled={createTaskMutation.isPending}
+            disabled={
+              createTaskMutation.isPending || updateTaskMutation.isPending
+            }
           />
           {form.formState.errors.dueDate && (
             <p className="text-sm text-red-600">
@@ -188,17 +225,26 @@ export function TaskForm({ onSuccess, onCancel }: TaskFormProps) {
               type="button"
               variant="outline"
               onClick={onCancel}
-              disabled={createTaskMutation.isPending}
+              disabled={
+                createTaskMutation.isPending || updateTaskMutation.isPending
+              }
             >
               Cancel
             </Button>
           )}
-          <Button type="submit" disabled={createTaskMutation.isPending}>
-            {createTaskMutation.isPending ? (
+          <Button
+            type="submit"
+            disabled={
+              createTaskMutation.isPending || updateTaskMutation.isPending
+            }
+          >
+            {createTaskMutation.isPending || updateTaskMutation.isPending ? (
               <div className="flex items-center space-x-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                <span>Creating...</span>
+                <span>{isEditing ? "Updating..." : "Creating..."}</span>
               </div>
+            ) : isEditing ? (
+              "Update Task"
             ) : (
               "Create Task"
             )}

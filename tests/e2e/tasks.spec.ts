@@ -307,4 +307,250 @@ test.describe("Task Management", () => {
       ).toBeVisible();
     });
   });
+
+  test.describe("Task Editing", () => {
+    test("should edit task details", async ({ page }) => {
+      // Create a task first
+      const task = createTestTask();
+      await tasksPage.createTask(task);
+
+      // Mock the update API
+      await page.route("/api/tasks/*", (route) => {
+        if (route.request().method() === "PUT") {
+          route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({
+              task: {
+                id: "1",
+                title: "Updated Task Title",
+                description: "Updated description",
+                priority: "high",
+                status: "todo",
+                dueDate: "2024-12-31T23:59:00.000Z",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                userId: "user-123",
+              },
+              message: "Task updated",
+            }),
+          });
+        } else {
+          route.continue();
+        }
+      });
+
+      // Click edit button for the task
+      const taskRow = page
+        .locator(`text=${task.title}`)
+        .locator("..")
+        .locator("..");
+      await taskRow.getByRole("button", { name: /edit/i }).click();
+
+      // Form should be visible with pre-filled data
+      await tasksPage.expectFormToBeVisible();
+      await expect(page.getByDisplayValue(task.title)).toBeVisible();
+
+      // Update task details
+      await page.getByLabel(/task title/i).fill("Updated Task Title");
+      await page.getByLabel(/description/i).fill("Updated description");
+
+      // Change priority to high
+      await page.getByRole("combobox").click();
+      await page.getByRole("option", { name: "high" }).click();
+
+      // Update due date
+      await page.getByLabel(/due date/i).fill("2024-12-31T23:59");
+
+      // Submit the form
+      await page.getByRole("button", { name: /update task/i }).click();
+
+      // Form should be hidden after update
+      await tasksPage.expectFormToBeHidden();
+
+      // Updated task should be visible in the list
+      await expect(page.getByText("Updated Task Title")).toBeVisible();
+    });
+
+    test("should cancel edit without saving changes", async ({ page }) => {
+      // Create a task first
+      const task = createSimpleTask();
+      await tasksPage.createTask(task);
+
+      // Click edit button for the task
+      const taskRow = page
+        .locator(`text=${task.title}`)
+        .locator("..")
+        .locator("..");
+      await taskRow.getByRole("button", { name: /edit/i }).click();
+
+      // Form should be visible with pre-filled data
+      await tasksPage.expectFormToBeVisible();
+      await expect(page.getByDisplayValue(task.title)).toBeVisible();
+
+      // Make some changes
+      await page.getByLabel(/task title/i).fill("Changed Title");
+
+      // Cancel the edit
+      await page.getByRole("button", { name: /cancel/i }).click();
+
+      // Form should be hidden
+      await tasksPage.expectFormToBeHidden();
+
+      // Original task should still be visible (unchanged)
+      await expect(page.getByText(task.title)).toBeVisible();
+      await expect(page.getByText("Changed Title")).not.toBeVisible();
+    });
+
+    test("should validate required fields when editing", async ({ page }) => {
+      // Create a task first
+      const task = createTestTask();
+      await tasksPage.createTask(task);
+
+      // Click edit button for the task
+      const taskRow = page
+        .locator(`text=${task.title}`)
+        .locator("..")
+        .locator("..");
+      await taskRow.getByRole("button", { name: /edit/i }).click();
+
+      // Clear the title field
+      await page.getByLabel(/task title/i).fill("");
+
+      // Try to submit
+      await page.getByRole("button", { name: /update task/i }).click();
+
+      // Should show validation error
+      await expect(page.getByText(/title is required/i)).toBeVisible();
+
+      // Form should still be visible
+      await tasksPage.expectFormToBeVisible();
+    });
+
+    test("should show loading state during update", async ({ page }) => {
+      // Create a task first
+      const task = createSimpleTask();
+      await tasksPage.createTask(task);
+
+      // Mock a slow update API
+      await page.route("/api/tasks/*", (route) => {
+        if (route.request().method() === "PUT") {
+          // Delay the response
+          setTimeout(() => {
+            route.fulfill({
+              status: 200,
+              contentType: "application/json",
+              body: JSON.stringify({
+                task: {
+                  id: "1",
+                  title: "Updated Task",
+                  status: "todo",
+                  priority: "medium",
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  userId: "user-123",
+                },
+                message: "Task updated",
+              }),
+            });
+          }, 1000);
+        } else {
+          route.continue();
+        }
+      });
+
+      // Click edit button
+      const taskRow = page
+        .locator(`text=${task.title}`)
+        .locator("..")
+        .locator("..");
+      await taskRow.getByRole("button", { name: /edit/i }).click();
+
+      // Make a change and submit
+      await page.getByLabel(/task title/i).fill("Updated Task");
+      await page.getByRole("button", { name: /update task/i }).click();
+
+      // Should show loading state
+      await expect(page.getByText(/updating.../i)).toBeVisible();
+
+      // Wait for update to complete
+      await expect(page.getByText(/updating.../i)).not.toBeVisible({
+        timeout: 2000,
+      });
+    });
+
+    test("should handle edit error gracefully", async ({ page }) => {
+      // Create a task first
+      const task = createSimpleTask();
+      await tasksPage.createTask(task);
+
+      // Mock API failure for update
+      await page.route("/api/tasks/*", (route) => {
+        if (route.request().method() === "PUT") {
+          route.fulfill({
+            status: 500,
+            contentType: "application/json",
+            body: JSON.stringify({ error: "Server error" }),
+          });
+        } else {
+          route.continue();
+        }
+      });
+
+      // Click edit button
+      const taskRow = page
+        .locator(`text=${task.title}`)
+        .locator("..")
+        .locator("..");
+      await taskRow.getByRole("button", { name: /edit/i }).click();
+
+      // Make a change and submit
+      await page.getByLabel(/task title/i).fill("Updated Task");
+      await page.getByRole("button", { name: /update task/i }).click();
+
+      // Should show error message
+      await expect(page.getByText(/failed to update task/i)).toBeVisible();
+
+      // Form should remain visible
+      await tasksPage.expectFormToBeVisible();
+    });
+
+    test("should switch between create and edit modes", async ({ page }) => {
+      // Create a task first
+      const task = createSimpleTask();
+      await tasksPage.createTask(task);
+
+      // Click Add Task button to open create form
+      await tasksPage.clickAddTaskButton();
+      await tasksPage.expectFormToBeVisible();
+      await expect(page.getByText(/create new task/i)).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: /create task/i }),
+      ).toBeVisible();
+
+      // Click edit button for existing task
+      const taskRow = page
+        .locator(`text=${task.title}`)
+        .locator("..")
+        .locator("..");
+      await taskRow.getByRole("button", { name: /edit/i }).click();
+
+      // Should switch to edit mode
+      await expect(page.getByText(/edit task/i)).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: /update task/i }),
+      ).toBeVisible();
+      await expect(page.getByDisplayValue(task.title)).toBeVisible();
+
+      // Cancel edit and click Add Task again
+      await page.getByRole("button", { name: /cancel/i }).click();
+      await tasksPage.clickAddTaskButton();
+
+      // Should be back in create mode
+      await expect(page.getByText(/create new task/i)).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: /create task/i }),
+      ).toBeVisible();
+    });
+  });
 });

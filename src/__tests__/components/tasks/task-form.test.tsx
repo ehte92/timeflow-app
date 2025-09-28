@@ -6,6 +6,7 @@ import {
   render,
 } from "@/__tests__/utils/test-utils";
 import { TaskForm } from "@/components/tasks/task-form";
+import type { Task } from "@/lib/db/schema/tasks";
 
 // Mock next/navigation
 const mockPush = jest.fn();
@@ -332,6 +333,191 @@ describe("TaskForm", () => {
           dueDate: undefined,
         }),
       });
+    });
+  });
+
+  describe("Edit Mode", () => {
+    const mockTask: Task = {
+      id: "task-123",
+      title: "Existing Task",
+      description: "Existing description",
+      priority: "high",
+      status: "todo",
+      dueDate: new Date("2024-12-25T10:00:00Z"),
+      categoryId: null,
+      estimatedMinutes: null,
+      actualMinutes: null,
+      completedAt: null,
+      userId: "user-123",
+      createdAt: new Date("2024-01-01T00:00:00Z"),
+      updatedAt: new Date("2024-01-01T00:00:00Z"),
+    };
+
+    it("should render in edit mode with task data pre-filled", () => {
+      render(<TaskForm task={mockTask} />);
+
+      expect(screen.getByDisplayValue("Existing Task")).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue("Existing description"),
+      ).toBeInTheDocument();
+      expect(screen.getByText(/edit task/i)).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /update task/i }),
+      ).toBeInTheDocument();
+    });
+
+    it("should pre-fill due date correctly in edit mode", () => {
+      render(<TaskForm task={mockTask} />);
+
+      const dueDateInput = screen.getByLabelText(
+        /due date/i,
+      ) as HTMLInputElement;
+      expect(dueDateInput.value).toBe("2024-12-25T10:00");
+    });
+
+    it("should submit update request when editing task", async () => {
+      const updatedTask = { ...mockTask, title: "Updated Task" };
+      mockFetch(
+        { task: updatedTask, message: "Task updated successfully" },
+        true,
+        200,
+      );
+
+      render(<TaskForm task={mockTask} />);
+
+      const titleInput = screen.getByLabelText(/task title/i);
+      await user.clear(titleInput);
+      await user.type(titleInput, "Updated Task");
+
+      const submitButton = screen.getByRole("button", { name: /update task/i });
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        const expectedCall = (global.fetch as jest.Mock).mock.calls.find(
+          (call) =>
+            call[0] === "/api/tasks/task-123" && call[1]?.method === "PUT",
+        );
+        expect(expectedCall).toBeDefined();
+
+        const body = JSON.parse(expectedCall[1].body);
+        expect(body.title).toBe("Updated Task");
+        expect(body.description).toBe("Existing description");
+        expect(body.priority).toBe("high");
+        expect(body.dueDate).toMatch(/2024-12-25T\d{2}:00:00\.000Z/); // Allow any hour due to timezone conversion
+      });
+    });
+
+    it("should show loading state during update", async () => {
+      // Mock a slow response
+      global.fetch = jest.fn().mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  status: 200,
+                  json: () =>
+                    Promise.resolve({ task: mockTask, message: "Updated" }),
+                }),
+              100,
+            ),
+          ),
+      );
+
+      render(<TaskForm task={mockTask} />);
+
+      const submitButton = screen.getByRole("button", { name: /update task/i });
+      await user.click(submitButton);
+
+      // Should show loading state
+      expect(screen.getByText(/updating.../i)).toBeInTheDocument();
+      expect(submitButton).toBeDisabled();
+
+      // Wait for submission to complete
+      await waitFor(
+        () => {
+          expect(
+            screen.getByRole("button", { name: /update task/i }),
+          ).not.toBeDisabled();
+        },
+        { timeout: 200 },
+      );
+    });
+
+    it("should show error message when update fails", async () => {
+      mockFetchError(400, "Update failed");
+
+      render(<TaskForm task={mockTask} />);
+
+      const submitButton = screen.getByRole("button", { name: /update task/i });
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/update failed/i)).toBeInTheDocument();
+      });
+    });
+
+    it("should not reset form after successful update", async () => {
+      const updatedTask = { ...mockTask, title: "Updated Task" };
+      mockFetch(
+        { task: updatedTask, message: "Task updated successfully" },
+        true,
+        200,
+      );
+
+      render(<TaskForm task={mockTask} />);
+
+      const titleInput = screen.getByLabelText(/task title/i);
+      await user.clear(titleInput);
+      await user.type(titleInput, "Updated Task");
+
+      const submitButton = screen.getByRole("button", { name: /update task/i });
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        // Form should not be reset in edit mode
+        expect(screen.getByDisplayValue("Updated Task")).toBeInTheDocument();
+      });
+    });
+
+    it("should call onSuccess callback after successful update", async () => {
+      const onSuccess = jest.fn();
+      const updatedTask = { ...mockTask, title: "Updated Task" };
+      mockFetch(
+        { task: updatedTask, message: "Task updated successfully" },
+        true,
+        200,
+      );
+
+      render(<TaskForm task={mockTask} onSuccess={onSuccess} />);
+
+      const submitButton = screen.getByRole("button", { name: /update task/i });
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(onSuccess).toHaveBeenCalled();
+      });
+    });
+
+    it("should handle task without description in edit mode", () => {
+      const taskWithoutDescription = { ...mockTask, description: null };
+      render(<TaskForm task={taskWithoutDescription} />);
+
+      const descriptionInput = screen.getByLabelText(
+        /description/i,
+      ) as HTMLTextAreaElement;
+      expect(descriptionInput.value).toBe("");
+    });
+
+    it("should handle task without due date in edit mode", () => {
+      const taskWithoutDueDate = { ...mockTask, dueDate: null };
+      render(<TaskForm task={taskWithoutDueDate} />);
+
+      const dueDateInput = screen.getByLabelText(
+        /due date/i,
+      ) as HTMLInputElement;
+      expect(dueDateInput.value).toBe("");
     });
   });
 });
