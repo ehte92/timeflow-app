@@ -85,6 +85,72 @@ export const createMockTask = (overrides: Partial<Task> = {}): Task => ({
   ...overrides,
 });
 
+// Date-specific task creators for filtering tests
+export const createOverdueTask = (overrides: Partial<Task> = {}): Task => {
+  const pastDate = new Date();
+  pastDate.setDate(pastDate.getDate() - 5); // 5 days ago
+  return createMockTask({
+    dueDate: pastDate,
+    status: "todo", // Overdue means incomplete
+    ...overrides,
+  });
+};
+
+export const createTodayTask = (overrides: Partial<Task> = {}): Task => {
+  const today = new Date();
+  today.setHours(12, 0, 0, 0); // Set to noon today
+  return createMockTask({
+    dueDate: today,
+    ...overrides,
+  });
+};
+
+export const createTomorrowTask = (overrides: Partial<Task> = {}): Task => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(12, 0, 0, 0); // Set to noon tomorrow
+  return createMockTask({
+    dueDate: tomorrow,
+    ...overrides,
+  });
+};
+
+export const createThisWeekTask = (overrides: Partial<Task> = {}): Task => {
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay()); // Start of current week
+  const thisWeek = new Date(startOfWeek);
+  thisWeek.setDate(startOfWeek.getDate() + 3); // Wednesday of this week
+  thisWeek.setHours(12, 0, 0, 0);
+  return createMockTask({
+    dueDate: thisWeek,
+    ...overrides,
+  });
+};
+
+export const createNextWeekTask = (overrides: Partial<Task> = {}): Task => {
+  const today = new Date();
+  const nextWeekStart = new Date(today);
+  nextWeekStart.setDate(today.getDate() + (7 - today.getDay())); // Start of next week
+  const nextWeek = new Date(nextWeekStart);
+  nextWeek.setDate(nextWeekStart.getDate() + 2); // Tuesday of next week
+  nextWeek.setHours(12, 0, 0, 0);
+  return createMockTask({
+    dueDate: nextWeek,
+    ...overrides,
+  });
+};
+
+export const createThisMonthTask = (overrides: Partial<Task> = {}): Task => {
+  const today = new Date();
+  const thisMonth = new Date(today.getFullYear(), today.getMonth(), 15); // 15th of current month
+  thisMonth.setHours(12, 0, 0, 0);
+  return createMockTask({
+    dueDate: thisMonth,
+    ...overrides,
+  });
+};
+
 export const createMockTasksResponse = (tasks = [createMockTask()]) => ({
   tasks,
   count: tasks.length,

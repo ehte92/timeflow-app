@@ -12,6 +12,15 @@ export interface TaskFilters {
   status?: TaskStatus;
   priority?: TaskPriority;
   categoryId?: string;
+  dateRange?:
+    | "overdue"
+    | "today"
+    | "tomorrow"
+    | "this_week"
+    | "next_week"
+    | "this_month";
+  dueDateFrom?: string; // ISO date string
+  dueDateTo?: string; // ISO date string
   limit?: number;
   offset?: number;
   [key: string]: unknown;
@@ -45,6 +54,10 @@ const taskApi = {
     if (filters?.status) searchParams.set("status", filters.status);
     if (filters?.priority) searchParams.set("priority", filters.priority);
     if (filters?.categoryId) searchParams.set("categoryId", filters.categoryId);
+    if (filters?.dateRange) searchParams.set("dateRange", filters.dateRange);
+    if (filters?.dueDateFrom)
+      searchParams.set("dueDateFrom", filters.dueDateFrom);
+    if (filters?.dueDateTo) searchParams.set("dueDateTo", filters.dueDateTo);
     if (filters?.limit) searchParams.set("limit", filters.limit.toString());
     if (filters?.offset) searchParams.set("offset", filters.offset.toString());
 

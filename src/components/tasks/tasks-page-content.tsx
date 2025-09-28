@@ -8,7 +8,7 @@ import { TaskForm } from "@/components/tasks/task-form";
 import { TaskList } from "@/components/tasks/task-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Task, TaskStatus } from "@/lib/db/schema/tasks";
+import type { Task, TaskPriority, TaskStatus } from "@/lib/db/schema/tasks";
 import type { TaskFilters } from "@/lib/query/hooks/tasks";
 
 export function TasksPageContent() {
@@ -16,6 +16,12 @@ export function TasksPageContent() {
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
+  const [priorityFilter, setPriorityFilter] = useState<TaskPriority | "all">(
+    "all",
+  );
+  const [dateRangeFilter, setDateRangeFilter] = useState<
+    TaskFilters["dateRange"] | "all"
+  >("all");
 
   // Auto-open form if new=true query parameter is present
   useEffect(() => {
@@ -48,7 +54,29 @@ export function TasksPageContent() {
     if (statusFilter !== "all") {
       filters.status = statusFilter;
     }
+    if (priorityFilter !== "all") {
+      filters.priority = priorityFilter;
+    }
+    if (dateRangeFilter !== "all") {
+      filters.dateRange = dateRangeFilter;
+    }
     return filters;
+  };
+
+  // Helper function to clear all filters
+  const clearAllFilters = () => {
+    setStatusFilter("all");
+    setPriorityFilter("all");
+    setDateRangeFilter("all");
+  };
+
+  // Helper function to get active filter count
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (statusFilter !== "all") count++;
+    if (priorityFilter !== "all") count++;
+    if (dateRangeFilter !== "all") count++;
+    return count;
   };
 
   return (
@@ -115,9 +143,13 @@ export function TasksPageContent() {
                   </h2>
 
                   {/* Filter Controls */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
+                    {/* Status Filters */}
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm font-medium text-gray-700">
+                        Status:
+                      </span>
                       <div className="flex gap-1">
                         <Badge
                           variant={
@@ -159,6 +191,160 @@ export function TasksPageContent() {
                         </Badge>
                       </div>
                     </div>
+
+                    {/* Priority Filters */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        Priority:
+                      </span>
+                      <div className="flex gap-1">
+                        <Badge
+                          variant={
+                            priorityFilter === "all" ? "default" : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setPriorityFilter("all")}
+                        >
+                          All
+                        </Badge>
+                        <Badge
+                          variant={
+                            priorityFilter === "low" ? "default" : "outline"
+                          }
+                          className="cursor-pointer bg-green-100 text-green-800 hover:bg-green-200"
+                          onClick={() => setPriorityFilter("low")}
+                        >
+                          Low
+                        </Badge>
+                        <Badge
+                          variant={
+                            priorityFilter === "medium" ? "default" : "outline"
+                          }
+                          className="cursor-pointer bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                          onClick={() => setPriorityFilter("medium")}
+                        >
+                          Medium
+                        </Badge>
+                        <Badge
+                          variant={
+                            priorityFilter === "high" ? "default" : "outline"
+                          }
+                          className="cursor-pointer bg-orange-100 text-orange-800 hover:bg-orange-200"
+                          onClick={() => setPriorityFilter("high")}
+                        >
+                          High
+                        </Badge>
+                        <Badge
+                          variant={
+                            priorityFilter === "urgent" ? "default" : "outline"
+                          }
+                          className="cursor-pointer bg-red-100 text-red-800 hover:bg-red-200"
+                          onClick={() => setPriorityFilter("urgent")}
+                        >
+                          Urgent
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Date Range Filters */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        Due:
+                      </span>
+                      <div className="flex gap-1">
+                        <Badge
+                          variant={
+                            dateRangeFilter === "all" ? "default" : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setDateRangeFilter("all")}
+                        >
+                          All
+                        </Badge>
+                        <Badge
+                          variant={
+                            dateRangeFilter === "overdue"
+                              ? "default"
+                              : "outline"
+                          }
+                          className="cursor-pointer bg-red-100 text-red-800 hover:bg-red-200"
+                          onClick={() => setDateRangeFilter("overdue")}
+                        >
+                          Overdue
+                        </Badge>
+                        <Badge
+                          variant={
+                            dateRangeFilter === "today" ? "default" : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setDateRangeFilter("today")}
+                        >
+                          Today
+                        </Badge>
+                        <Badge
+                          variant={
+                            dateRangeFilter === "tomorrow"
+                              ? "default"
+                              : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setDateRangeFilter("tomorrow")}
+                        >
+                          Tomorrow
+                        </Badge>
+                        <Badge
+                          variant={
+                            dateRangeFilter === "this_week"
+                              ? "default"
+                              : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setDateRangeFilter("this_week")}
+                        >
+                          This Week
+                        </Badge>
+                        <Badge
+                          variant={
+                            dateRangeFilter === "next_week"
+                              ? "default"
+                              : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setDateRangeFilter("next_week")}
+                        >
+                          Next Week
+                        </Badge>
+                        <Badge
+                          variant={
+                            dateRangeFilter === "this_month"
+                              ? "default"
+                              : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setDateRangeFilter("this_month")}
+                        >
+                          This Month
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Active Filter Count and Clear Button */}
+                    {getActiveFilterCount() > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500">
+                          {getActiveFilterCount()} active filter
+                          {getActiveFilterCount() > 1 ? "s" : ""}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearAllFilters}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          Clear All
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
 

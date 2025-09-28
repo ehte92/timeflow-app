@@ -515,4 +515,192 @@ describe("TaskList", () => {
       );
     });
   });
+
+  it("should filter tasks by priority when priority filter is provided", async () => {
+    const highPriorityTasks = [
+      createMockTask({
+        id: "1",
+        title: "High Priority Task",
+        priority: "high",
+      }),
+    ];
+
+    mockFetch(createMockTasksResponse(highPriorityTasks));
+
+    render(<TaskList filters={{ priority: "high" }} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("High Priority Task")).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith("/api/tasks?priority=high");
+    });
+  });
+
+  it("should filter tasks by date range when dateRange filter is provided", async () => {
+    const overdueTasks = [
+      createMockTask({
+        id: "1",
+        title: "Overdue Task",
+        dueDate: new Date("2023-01-01"),
+        status: "todo",
+      }),
+    ];
+
+    mockFetch(createMockTasksResponse(overdueTasks));
+
+    render(<TaskList filters={{ dateRange: "overdue" }} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Overdue Task")).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith("/api/tasks?dateRange=overdue");
+    });
+  });
+
+  it("should handle all priority filter options", async () => {
+    const priorities = ["low", "medium", "high", "urgent"] as const;
+
+    for (const priority of priorities) {
+      const mockTasks = [
+        createMockTask({ title: `${priority} Priority Task`, priority }),
+      ];
+      mockFetch(createMockTasksResponse(mockTasks));
+
+      const { rerender } = render(<TaskList filters={{ priority }} />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(`${priority} Priority Task`),
+        ).toBeInTheDocument();
+        expect(global.fetch).toHaveBeenCalledWith(
+          `/api/tasks?priority=${priority}`,
+        );
+      });
+
+      // Clean up for next iteration
+      rerender(<div />);
+    }
+  });
+
+  it("should handle all date range filter options", async () => {
+    const dateRanges = [
+      "overdue",
+      "today",
+      "tomorrow",
+      "this_week",
+      "next_week",
+      "this_month",
+    ] as const;
+
+    for (const dateRange of dateRanges) {
+      const mockTasks = [createMockTask({ title: `${dateRange} Task` })];
+      mockFetch(createMockTasksResponse(mockTasks));
+
+      const { rerender } = render(<TaskList filters={{ dateRange }} />);
+
+      await waitFor(() => {
+        expect(screen.getByText(`${dateRange} Task`)).toBeInTheDocument();
+        expect(global.fetch).toHaveBeenCalledWith(
+          `/api/tasks?dateRange=${dateRange}`,
+        );
+      });
+
+      // Clean up for next iteration
+      rerender(<div />);
+    }
+  });
+
+  it("should handle combined filters", async () => {
+    const filteredTasks = [
+      createMockTask({
+        id: "1",
+        title: "Filtered Task",
+        status: "todo",
+        priority: "urgent",
+      }),
+    ];
+
+    mockFetch(createMockTasksResponse(filteredTasks));
+
+    render(
+      <TaskList
+        filters={{
+          status: "todo",
+          priority: "urgent",
+          dateRange: "this_week",
+          categoryId: "cat-123",
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Filtered Task")).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?status=todo&priority=urgent&categoryId=cat-123&dateRange=this_week",
+      );
+    });
+  });
+
+  it("should handle custom date range filters", async () => {
+    const customDateTasks = [
+      createMockTask({
+        id: "1",
+        title: "Custom Date Task",
+        dueDate: new Date("2024-01-15"),
+      }),
+    ];
+
+    mockFetch(createMockTasksResponse(customDateTasks));
+
+    render(
+      <TaskList
+        filters={{
+          dueDateFrom: "2024-01-01T00:00:00.000Z",
+          dueDateTo: "2024-01-31T23:59:59.999Z",
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Custom Date Task")).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?dueDateFrom=2024-01-01T00%3A00%3A00.000Z&dueDateTo=2024-01-31T23%3A59%3A59.999Z",
+      );
+    });
+  });
+
+  it("should handle empty filter results gracefully", async () => {
+    mockFetch(createMockTasksResponse([]));
+
+    render(<TaskList filters={{ priority: "urgent", dateRange: "overdue" }} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/no tasks yet/i)).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?priority=urgent&dateRange=overdue",
+      );
+    });
+  });
+
+  it("should re-fetch when filters change", async () => {
+    const initialTasks = [createMockTask({ title: "Initial Task" })];
+    const filteredTasks = [
+      createMockTask({ title: "Filtered Task", priority: "high" }),
+    ];
+
+    // First render with no filters
+    mockFetch(createMockTasksResponse(initialTasks));
+    const { rerender } = render(<TaskList />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Initial Task")).toBeInTheDocument();
+    });
+
+    // Re-render with filters
+    mockFetch(createMockTasksResponse(filteredTasks));
+    rerender(<TaskList filters={{ priority: "high" }} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Filtered Task")).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith("/api/tasks?priority=high");
+    });
+  });
 });

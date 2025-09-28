@@ -85,6 +85,139 @@ describe("Task Query Hooks", () => {
       );
     });
 
+    it("should fetch tasks with priority filter", async () => {
+      const mockResponse = createMockTasksResponse([]);
+      mockFetch(mockResponse);
+
+      const filters = { priority: "urgent" as const };
+
+      const { result } = renderHook(() => useTasks(filters), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith("/api/tasks?priority=urgent");
+    });
+
+    it("should fetch tasks with date range filter", async () => {
+      const mockResponse = createMockTasksResponse([]);
+      mockFetch(mockResponse);
+
+      const filters = { dateRange: "overdue" as const };
+
+      const { result } = renderHook(() => useTasks(filters), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith("/api/tasks?dateRange=overdue");
+    });
+
+    it("should fetch tasks with custom date range", async () => {
+      const mockResponse = createMockTasksResponse([]);
+      mockFetch(mockResponse);
+
+      const filters = {
+        dueDateFrom: "2024-01-01T00:00:00.000Z",
+        dueDateTo: "2024-01-31T23:59:59.999Z",
+      };
+
+      const { result } = renderHook(() => useTasks(filters), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?dueDateFrom=2024-01-01T00%3A00%3A00.000Z&dueDateTo=2024-01-31T23%3A59%3A59.999Z",
+      );
+    });
+
+    it("should fetch tasks with combined filters", async () => {
+      const mockResponse = createMockTasksResponse([]);
+      mockFetch(mockResponse);
+
+      const filters = {
+        status: "todo" as const,
+        priority: "high" as const,
+        dateRange: "this_week" as const,
+        categoryId: "cat-123",
+      };
+
+      const { result } = renderHook(() => useTasks(filters), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?status=todo&priority=high&categoryId=cat-123&dateRange=this_week",
+      );
+    });
+
+    it("should fetch tasks with all date range options", async () => {
+      const dateRanges = [
+        "overdue",
+        "today",
+        "tomorrow",
+        "this_week",
+        "next_week",
+        "this_month",
+      ] as const;
+
+      for (const dateRange of dateRanges) {
+        const mockResponse = createMockTasksResponse([]);
+        mockFetch(mockResponse);
+
+        const filters = { dateRange };
+
+        const { result } = renderHook(() => useTasks(filters), {
+          wrapper: createWrapper(queryClient),
+        });
+
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true);
+        });
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          `/api/tasks?dateRange=${dateRange}`,
+        );
+      }
+    });
+
+    it("should fetch tasks with all priority options", async () => {
+      const priorities = ["low", "medium", "high", "urgent"] as const;
+
+      for (const priority of priorities) {
+        const mockResponse = createMockTasksResponse([]);
+        mockFetch(mockResponse);
+
+        const filters = { priority };
+
+        const { result } = renderHook(() => useTasks(filters), {
+          wrapper: createWrapper(queryClient),
+        });
+
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true);
+        });
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          `/api/tasks?priority=${priority}`,
+        );
+      }
+    });
+
     it("should handle fetch error", async () => {
       mockFetchError(500, "Server Error");
 

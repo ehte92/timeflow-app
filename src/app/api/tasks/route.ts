@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, isNotNull, lt, lte, or } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth/auth-simple";
@@ -19,6 +19,18 @@ const taskFilterSchema = z.object({
   status: z.enum(taskStatusEnum).optional(),
   priority: z.enum(taskPriorityEnum).optional(),
   categoryId: z.string().uuid().optional(),
+  dateRange: z
+    .enum([
+      "overdue",
+      "today",
+      "tomorrow",
+      "this_week",
+      "next_week",
+      "this_month",
+    ])
+    .optional(),
+  dueDateFrom: z.string().datetime().optional(),
+  dueDateTo: z.string().datetime().optional(),
   limit: z.string().default("50").transform(Number),
   offset: z.string().default("0").transform(Number),
 });
@@ -36,6 +48,9 @@ export async function GET(request: NextRequest) {
       status: searchParams.get("status") || undefined,
       priority: searchParams.get("priority") || undefined,
       categoryId: searchParams.get("categoryId") || undefined,
+      dateRange: searchParams.get("dateRange") || undefined,
+      dueDateFrom: searchParams.get("dueDateFrom") || undefined,
+      dueDateTo: searchParams.get("dueDateTo") || undefined,
       limit: searchParams.get("limit") || "50",
       offset: searchParams.get("offset") || "0",
     });
@@ -53,6 +68,79 @@ export async function GET(request: NextRequest) {
 
     if (filters.categoryId) {
       conditions.push(eq(tasks.categoryId, filters.categoryId));
+    }
+
+    // Date range filtering
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (filters.dateRange) {
+      switch (filters.dateRange) {
+        case "overdue": {
+          const statusCondition = or(
+            eq(tasks.status, "todo"),
+            eq(tasks.status, "in_progress"),
+          );
+          conditions.push(isNotNull(tasks.dueDate));
+          conditions.push(lt(tasks.dueDate, today));
+          if (statusCondition) conditions.push(statusCondition);
+          break;
+        }
+        case "today":
+          conditions.push(isNotNull(tasks.dueDate));
+          conditions.push(gte(tasks.dueDate, today));
+          conditions.push(lt(tasks.dueDate, tomorrow));
+          break;
+        case "tomorrow": {
+          const dayAfterTomorrow = new Date(tomorrow);
+          dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
+          conditions.push(isNotNull(tasks.dueDate));
+          conditions.push(gte(tasks.dueDate, tomorrow));
+          conditions.push(lt(tasks.dueDate, dayAfterTomorrow));
+          break;
+        }
+        case "this_week": {
+          const startOfWeek = new Date(today);
+          startOfWeek.setDate(today.getDate() - today.getDay());
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 7);
+          conditions.push(isNotNull(tasks.dueDate));
+          conditions.push(gte(tasks.dueDate, startOfWeek));
+          conditions.push(lt(tasks.dueDate, endOfWeek));
+          break;
+        }
+        case "next_week": {
+          const nextWeekStart = new Date(today);
+          nextWeekStart.setDate(today.getDate() + (7 - today.getDay()));
+          const nextWeekEnd = new Date(nextWeekStart);
+          nextWeekEnd.setDate(nextWeekStart.getDate() + 7);
+          conditions.push(isNotNull(tasks.dueDate));
+          conditions.push(gte(tasks.dueDate, nextWeekStart));
+          conditions.push(lt(tasks.dueDate, nextWeekEnd));
+          break;
+        }
+        case "this_month": {
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+          conditions.push(isNotNull(tasks.dueDate));
+          conditions.push(gte(tasks.dueDate, startOfMonth));
+          conditions.push(lt(tasks.dueDate, endOfMonth));
+          break;
+        }
+      }
+    }
+
+    // Custom date range filtering
+    if (filters.dueDateFrom) {
+      conditions.push(isNotNull(tasks.dueDate));
+      conditions.push(gte(tasks.dueDate, new Date(filters.dueDateFrom)));
+    }
+
+    if (filters.dueDateTo) {
+      conditions.push(isNotNull(tasks.dueDate));
+      conditions.push(lte(tasks.dueDate, new Date(filters.dueDateTo)));
     }
 
     const userTasks = await db
