@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Task, TaskPriority, TaskStatus } from "@/lib/db/schema/tasks";
 import {
+  type TaskFilters,
   useDeleteTask,
   useTasks,
   useToggleTaskStatus,
@@ -15,6 +16,7 @@ interface TaskListProps {
   onEditTask?: (task: Task) => void;
   onDeleteTask?: (taskId: string) => void;
   refreshTrigger?: number; // Keep for compatibility, but won't be used
+  filters?: TaskFilters;
 }
 
 const priorityColors: Record<TaskPriority, string> = {
@@ -34,9 +36,9 @@ const statusIcons: Record<
   cancelled: Circle,
 };
 
-export function TaskList({ onEditTask, onDeleteTask }: TaskListProps) {
+export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
   // Use React Query hooks
-  const { data, isLoading, error, refetch } = useTasks();
+  const { data, isLoading, error, refetch } = useTasks(filters);
   const deleteTaskMutation = useDeleteTask();
   const toggleStatusMutation = useToggleTaskStatus();
 

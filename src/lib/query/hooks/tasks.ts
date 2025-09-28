@@ -8,7 +8,7 @@ interface TasksResponse {
   count: number;
 }
 
-interface TaskFilters {
+export interface TaskFilters {
   status?: TaskStatus;
   priority?: TaskPriority;
   categoryId?: string;

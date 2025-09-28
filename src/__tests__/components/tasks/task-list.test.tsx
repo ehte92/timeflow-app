@@ -449,4 +449,53 @@ describe("TaskList", () => {
       expect(screen.getByText("in progress")).toBeInTheDocument(); // Should replace underscore
     });
   });
+
+  it("should filter tasks by status when filters prop is provided", async () => {
+    const mockTasks = [
+      createMockTask({ id: "1", title: "Todo Task", status: "todo" }),
+      createMockTask({ id: "2", title: "Completed Task", status: "completed" }),
+      createMockTask({
+        id: "3",
+        title: "In Progress Task",
+        status: "in_progress",
+      }),
+    ];
+
+    // First, test showing all tasks
+    mockFetch(createMockTasksResponse(mockTasks));
+    const { rerender } = render(<TaskList />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Todo Task")).toBeInTheDocument();
+      expect(screen.getByText("Completed Task")).toBeInTheDocument();
+      expect(screen.getByText("In Progress Task")).toBeInTheDocument();
+    });
+
+    // Then test filtering to only completed tasks
+    const completedTasks = mockTasks.filter(
+      (task) => task.status === "completed",
+    );
+    mockFetch(createMockTasksResponse(completedTasks));
+
+    rerender(<TaskList filters={{ status: "completed" }} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Completed Task")).toBeInTheDocument();
+      expect(screen.queryByText("Todo Task")).not.toBeInTheDocument();
+      expect(screen.queryByText("In Progress Task")).not.toBeInTheDocument();
+    });
+  });
+
+  it("should call useTasks with filters when filters prop is provided", async () => {
+    const mockTasks = [createMockTask({ status: "todo" })];
+    mockFetch(createMockTasksResponse(mockTasks));
+
+    render(<TaskList filters={{ status: "todo", priority: "high" }} />);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?status=todo&priority=high",
+      );
+    });
+  });
 });

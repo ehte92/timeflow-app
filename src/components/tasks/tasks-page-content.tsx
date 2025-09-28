@@ -1,18 +1,21 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
+import { Filter, Plus, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/header";
 import { TaskForm } from "@/components/tasks/task-form";
 import { TaskList } from "@/components/tasks/task-list";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Task } from "@/lib/db/schema/tasks";
+import type { Task, TaskStatus } from "@/lib/db/schema/tasks";
+import type { TaskFilters } from "@/lib/query/hooks/tasks";
 
 export function TasksPageContent() {
   const searchParams = useSearchParams();
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
 
   // Auto-open form if new=true query parameter is present
   useEffect(() => {
@@ -38,6 +41,14 @@ export function TasksPageContent() {
   const handleCancelEdit = () => {
     setShowForm(false);
     setEditingTask(null);
+  };
+
+  const getTaskFilters = (): TaskFilters => {
+    const filters: TaskFilters = {};
+    if (statusFilter !== "all") {
+      filters.status = statusFilter;
+    }
+    return filters;
   };
 
   return (
@@ -103,12 +114,58 @@ export function TasksPageContent() {
                     Your Tasks
                   </h2>
 
-                  {/* Future: Add filters and sorting controls here */}
+                  {/* Filter Controls */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-gray-500" />
+                      <div className="flex gap-1">
+                        <Badge
+                          variant={
+                            statusFilter === "all" ? "default" : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setStatusFilter("all")}
+                        >
+                          All
+                        </Badge>
+                        <Badge
+                          variant={
+                            statusFilter === "todo" ? "default" : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setStatusFilter("todo")}
+                        >
+                          To Do
+                        </Badge>
+                        <Badge
+                          variant={
+                            statusFilter === "in_progress"
+                              ? "default"
+                              : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setStatusFilter("in_progress")}
+                        >
+                          In Progress
+                        </Badge>
+                        <Badge
+                          variant={
+                            statusFilter === "completed" ? "default" : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setStatusFilter("completed")}
+                        >
+                          Completed
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <TaskList
                   onEditTask={handleEditTask}
                   onDeleteTask={handleTaskDeleted}
+                  filters={getTaskFilters()}
                 />
               </div>
             </div>
