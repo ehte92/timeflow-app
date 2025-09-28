@@ -1,6 +1,8 @@
 "use client";
 
 import { CheckCircle, Circle, Clock, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { DeleteConfirmationDialog } from "@/components/tasks/delete-confirmation-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -42,6 +44,10 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
   const deleteTaskMutation = useDeleteTask();
   const toggleStatusMutation = useToggleTaskStatus();
 
+  // Dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+
   const tasks = data?.tasks || [];
 
   const handleToggleStatus = async (task: Task) => {
@@ -52,16 +58,22 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
     }
   };
 
-  const handleDelete = async (taskId: string) => {
-    if (!window.confirm("Are you sure you want to delete this task?")) {
-      return;
-    }
+  const handleDeleteClick = (taskId: string) => {
+    setTaskToDelete(taskId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!taskToDelete) return;
 
     try {
-      await deleteTaskMutation.mutateAsync(taskId);
-      onDeleteTask?.(taskId);
+      await deleteTaskMutation.mutateAsync(taskToDelete);
+      onDeleteTask?.(taskToDelete);
     } catch (err) {
       console.error("Error deleting task:", err);
+    } finally {
+      setTaskToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -207,7 +219,7 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(task.id)}
+                    onClick={() => handleDeleteClick(task.id)}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     disabled={deleteTaskMutation.isPending}
                   >
@@ -251,6 +263,13 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
           </Card>
         );
       })}
+
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        isLoading={deleteTaskMutation.isPending}
+      />
     </div>
   );
 }

@@ -8,21 +8,14 @@ import {
   render,
 } from "@/__tests__/utils/test-utils";
 import { TaskList } from "@/components/tasks/task-list";
-import type { TaskStatus } from "@/lib/db/schema/tasks";
 
-// Mock window.confirm
-const mockConfirm = jest.fn();
-Object.defineProperty(window, "confirm", {
-  value: mockConfirm,
-  writable: true,
-});
+// Note: We no longer use window.confirm since we have a proper dialog component
 
 describe("TaskList", () => {
   const user = userEvent.setup();
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockConfirm.mockReturnValue(true);
   });
 
   it("should render loading state", () => {
@@ -207,9 +200,21 @@ describe("TaskList", () => {
     if (deleteButton) {
       await user.click(deleteButton);
 
-      expect(mockConfirm).toHaveBeenCalledWith(
-        "Are you sure you want to delete this task?",
-      );
+      // Check that dialog opens
+      await waitFor(() => {
+        expect(screen.getByText("Delete Task")).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            "Are you sure you want to delete this task? This action cannot be undone.",
+          ),
+        ).toBeInTheDocument();
+      });
+
+      // Click the Delete button in the dialog
+      const confirmDeleteButton = screen.getByRole("button", {
+        name: /delete/i,
+      });
+      await user.click(confirmDeleteButton);
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith("/api/tasks/task-1", {
@@ -224,8 +229,6 @@ describe("TaskList", () => {
   it("should not delete task when delete is cancelled", async () => {
     const mockTask = createMockTask({ title: "Test Task" });
     mockFetch(createMockTasksResponse([mockTask]));
-
-    mockConfirm.mockReturnValue(false); // User cancels
 
     const onDeleteTask = jest.fn();
     render(<TaskList onDeleteTask={onDeleteTask} />);
@@ -242,7 +245,20 @@ describe("TaskList", () => {
     if (deleteButton) {
       await user.click(deleteButton);
 
-      expect(mockConfirm).toHaveBeenCalled();
+      // Check that dialog opens
+      await waitFor(() => {
+        expect(screen.getByText("Delete Task")).toBeInTheDocument();
+      });
+
+      // Click the Cancel button in the dialog
+      const cancelButton = screen.getByRole("button", { name: /cancel/i });
+      await user.click(cancelButton);
+
+      // Check that dialog closes and nothing happens
+      await waitFor(() => {
+        expect(screen.queryByText("Delete Task")).not.toBeInTheDocument();
+      });
+
       expect(onDeleteTask).not.toHaveBeenCalled();
       expect(global.fetch).not.toHaveBeenCalledWith(
         expect.stringContaining("/api/tasks/"),
