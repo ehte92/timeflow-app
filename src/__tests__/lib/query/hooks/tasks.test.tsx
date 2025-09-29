@@ -195,6 +195,86 @@ describe("Task Query Hooks", () => {
       }
     });
 
+    it("should fetch tasks with search parameter", async () => {
+      const mockResponse = createMockTasksResponse([]);
+      mockFetch(mockResponse);
+
+      const filters = { search: "important meeting" };
+
+      const { result } = renderHook(() => useTasks(filters), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?search=important+meeting",
+      );
+    });
+
+    it("should fetch tasks with search and other filters combined", async () => {
+      const mockResponse = createMockTasksResponse([]);
+      mockFetch(mockResponse);
+
+      const filters = {
+        search: "urgent task",
+        priority: "high" as const,
+        status: "todo" as const,
+        dateRange: "today" as const,
+      };
+
+      const { result } = renderHook(() => useTasks(filters), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?status=todo&priority=high&dateRange=today&search=urgent+task",
+      );
+    });
+
+    it("should handle empty search string", async () => {
+      const mockResponse = createMockTasksResponse([]);
+      mockFetch(mockResponse);
+
+      const filters = { search: "" };
+
+      const { result } = renderHook(() => useTasks(filters), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      // Empty search should not be included in URL
+      expect(global.fetch).toHaveBeenCalledWith("/api/tasks");
+    });
+
+    it("should encode special characters in search", async () => {
+      const mockResponse = createMockTasksResponse([]);
+      mockFetch(mockResponse);
+
+      const filters = { search: "test & review" };
+
+      const { result } = renderHook(() => useTasks(filters), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?search=test+%26+review",
+      );
+    });
+
     it("should fetch tasks with all priority options", async () => {
       const priorities = ["low", "medium", "high", "urgent"] as const;
 

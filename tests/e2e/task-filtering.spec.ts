@@ -911,4 +911,168 @@ test.describe("Task Filtering E2E", () => {
       await tasksPage.expectActiveFilterCount(1);
     });
   });
+
+  test.describe("Search Functionality", () => {
+    test("should search tasks by title", async ({ page }) => {
+      // Mock API response with tasks that match search
+      await page.route("/api/tasks?search=meeting", (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            tasks: [
+              {
+                id: "1",
+                title: "Team Meeting",
+                description: "Weekly sync meeting",
+                status: "todo",
+                priority: "medium",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                userId: "user-123",
+                dueDate: null,
+                completedAt: null,
+                categoryId: null,
+                estimatedMinutes: null,
+                actualMinutes: null,
+              },
+              {
+                id: "2",
+                title: "Client Meeting Prep",
+                description: "Prepare for client presentation",
+                status: "in_progress",
+                priority: "high",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                userId: "user-123",
+                dueDate: null,
+                completedAt: null,
+                categoryId: null,
+                estimatedMinutes: null,
+                actualMinutes: null,
+              },
+            ],
+            count: 2,
+          }),
+        });
+      });
+
+      await tasksPage.searchTasks("meeting");
+      await tasksPage.waitForFilteredResults();
+
+      await tasksPage.expectTaskInList("Team Meeting");
+      await tasksPage.expectTaskInList("Client Meeting Prep");
+      await tasksPage.expectActiveFilterCount(1);
+    });
+
+    test("should search tasks by description", async ({ page }) => {
+      await page.route("/api/tasks?search=presentation", (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            tasks: [
+              {
+                id: "1",
+                title: "Client Meeting Prep",
+                description: "Prepare for client presentation",
+                status: "todo",
+                priority: "high",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                userId: "user-123",
+                dueDate: null,
+                completedAt: null,
+                categoryId: null,
+                estimatedMinutes: null,
+                actualMinutes: null,
+              },
+            ],
+            count: 1,
+          }),
+        });
+      });
+
+      await tasksPage.searchTasks("presentation");
+      await tasksPage.waitForFilteredResults();
+
+      await tasksPage.expectTaskInList("Client Meeting Prep");
+      await tasksPage.expectActiveFilterCount(1);
+    });
+
+    test("should combine search with filters", async ({ page }) => {
+      await page.route("/api/tasks?status=todo&search=meeting", (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            tasks: [
+              {
+                id: "1",
+                title: "Team Meeting",
+                description: "Weekly sync meeting",
+                status: "todo",
+                priority: "medium",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                userId: "user-123",
+                dueDate: null,
+                completedAt: null,
+                categoryId: null,
+                estimatedMinutes: null,
+                actualMinutes: null,
+              },
+            ],
+            count: 1,
+          }),
+        });
+      });
+
+      await tasksPage.searchTasks("meeting");
+      await tasksPage.clickStatusFilter("todo");
+      await tasksPage.waitForFilteredResults();
+
+      await tasksPage.expectTaskInList("Team Meeting");
+      await tasksPage.expectActiveFilterCount(2);
+    });
+
+    test("should clear search when Clear All is clicked", async ({ page }) => {
+      await page.route("/api/tasks", (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            tasks: [],
+            count: 0,
+          }),
+        });
+      });
+
+      await tasksPage.searchTasks("meeting");
+      await tasksPage.expectActiveFilterCount(1);
+
+      await tasksPage.clickClearAllFilters();
+      await tasksPage.expectActiveFilterCount(0);
+      await tasksPage.expectSearchInputValue("");
+    });
+
+    test("should show no results for non-matching search", async ({ page }) => {
+      await page.route("/api/tasks?search=nonexistent", (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            tasks: [],
+            count: 0,
+          }),
+        });
+      });
+
+      await tasksPage.searchTasks("nonexistent");
+      await tasksPage.waitForFilteredResults();
+
+      await tasksPage.expectNoTasksWithFilter();
+      await tasksPage.expectActiveFilterCount(1);
+    });
+  });
 });

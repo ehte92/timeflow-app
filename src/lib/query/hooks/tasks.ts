@@ -21,6 +21,7 @@ export interface TaskFilters {
     | "this_month";
   dueDateFrom?: string; // ISO date string
   dueDateTo?: string; // ISO date string
+  search?: string; // Text search across title and description
   limit?: number;
   offset?: number;
   [key: string]: unknown;
@@ -58,6 +59,7 @@ const taskApi = {
     if (filters?.dueDateFrom)
       searchParams.set("dueDateFrom", filters.dueDateFrom);
     if (filters?.dueDateTo) searchParams.set("dueDateTo", filters.dueDateTo);
+    if (filters?.search) searchParams.set("search", filters.search);
     if (filters?.limit) searchParams.set("limit", filters.limit.toString());
     if (filters?.offset) searchParams.set("offset", filters.offset.toString());
 

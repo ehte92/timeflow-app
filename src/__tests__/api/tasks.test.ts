@@ -42,6 +42,7 @@ jest.mock("drizzle-orm", () => ({
   desc: jest.fn((field) => ({ type: "desc", field })),
   eq: jest.fn((field, value) => ({ type: "eq", field, value })),
   gte: jest.fn((field, value) => ({ type: "gte", field, value })),
+  ilike: jest.fn((field, value) => ({ type: "ilike", field, value })),
   isNotNull: jest.fn((field) => ({ type: "isNotNull", field })),
   lt: jest.fn((field, value) => ({ type: "lt", field, value })),
   lte: jest.fn((field, value) => ({ type: "lte", field, value })),
@@ -426,6 +427,125 @@ describe("Tasks API Route - Filtering", () => {
             expect.objectContaining({
               type: "eq",
               value: "urgent",
+            }),
+          ]),
+        }),
+      );
+    });
+  });
+
+  describe("Search Functionality", () => {
+    it("should filter tasks by search term in title", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?search=important task",
+      );
+
+      await GET(request);
+
+      expect(mockWhere).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "and",
+          args: expect.arrayContaining([
+            expect.objectContaining({
+              type: "eq",
+              value: "user-123",
+            }),
+            expect.objectContaining({
+              type: "or",
+              args: expect.arrayContaining([
+                expect.objectContaining({
+                  type: "ilike",
+                }),
+                expect.objectContaining({
+                  type: "ilike",
+                }),
+              ]),
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it("should handle empty search term", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?search=",
+      );
+
+      await GET(request);
+
+      expect(mockWhere).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "and",
+          args: expect.arrayContaining([
+            expect.objectContaining({
+              type: "eq",
+              value: "user-123",
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it("should combine search with other filters", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?search=meeting&priority=high&status=todo",
+      );
+
+      await GET(request);
+
+      expect(mockWhere).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "and",
+          args: expect.arrayContaining([
+            expect.objectContaining({
+              type: "eq",
+              value: "user-123",
+            }),
+            expect.objectContaining({
+              type: "eq",
+              value: "todo",
+            }),
+            expect.objectContaining({
+              type: "eq",
+              value: "high",
+            }),
+            expect.objectContaining({
+              type: "or",
+              args: expect.arrayContaining([
+                expect.objectContaining({
+                  type: "ilike",
+                }),
+                expect.objectContaining({
+                  type: "ilike",
+                }),
+              ]),
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it("should handle special characters in search", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?search=test%20%26%20review",
+      );
+
+      await GET(request);
+
+      expect(mockWhere).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "and",
+          args: expect.arrayContaining([
+            expect.objectContaining({
+              type: "or",
+              args: expect.arrayContaining([
+                expect.objectContaining({
+                  type: "ilike",
+                }),
+                expect.objectContaining({
+                  type: "ilike",
+                }),
+              ]),
             }),
           ]),
         }),

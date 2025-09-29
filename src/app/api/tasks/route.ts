@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, isNotNull, lt, lte, or } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, isNotNull, lt, lte, or } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth/auth-simple";
@@ -31,6 +31,7 @@ const taskFilterSchema = z.object({
     .optional(),
   dueDateFrom: z.string().datetime().optional(),
   dueDateTo: z.string().datetime().optional(),
+  search: z.string().max(255).optional(),
   limit: z.string().default("50").transform(Number),
   offset: z.string().default("0").transform(Number),
 });
@@ -51,6 +52,7 @@ export async function GET(request: NextRequest) {
       dateRange: searchParams.get("dateRange") || undefined,
       dueDateFrom: searchParams.get("dueDateFrom") || undefined,
       dueDateTo: searchParams.get("dueDateTo") || undefined,
+      search: searchParams.get("search") || undefined,
       limit: searchParams.get("limit") || "50",
       offset: searchParams.get("offset") || "0",
     });
@@ -68,6 +70,18 @@ export async function GET(request: NextRequest) {
 
     if (filters.categoryId) {
       conditions.push(eq(tasks.categoryId, filters.categoryId));
+    }
+
+    // Text search across title and description
+    if (filters.search) {
+      const searchTerm = `%${filters.search}%`;
+      const searchCondition = or(
+        ilike(tasks.title, searchTerm),
+        and(isNotNull(tasks.description), ilike(tasks.description, searchTerm)),
+      );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
     }
 
     // Date range filtering

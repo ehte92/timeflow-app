@@ -243,6 +243,37 @@ export class TasksPageHelper {
     // Wait for the tasks list to update after applying filters
     await this.page.waitForTimeout(500); // Give time for API call and UI update
   }
+
+  // Search functionality
+  async searchTasks(searchTerm: string) {
+    await this.page.getByPlaceholder("Search tasks...").fill(searchTerm);
+    // Wait for debounced search to trigger
+    await this.page.waitForTimeout(400);
+  }
+
+  async clearSearch() {
+    const searchInput = this.page.getByPlaceholder("Search tasks...");
+    await searchInput.fill("");
+    // Wait for debounced search to trigger
+    await this.page.waitForTimeout(400);
+  }
+
+  async expectSearchInputValue(value: string) {
+    await expect(this.page.getByPlaceholder("Search tasks...")).toHaveValue(
+      value,
+    );
+  }
+
+  async expectTasksContaining(searchTerm: string) {
+    // Check that visible tasks contain the search term
+    const taskElements = this.page.locator('[data-testid="task-item"]');
+    const count = await taskElements.count();
+
+    for (let i = 0; i < count; i++) {
+      const taskText = await taskElements.nth(i).textContent();
+      expect(taskText?.toLowerCase()).toContain(searchTerm.toLowerCase());
+    }
+  }
 }
 
 export class AuthHelper {
