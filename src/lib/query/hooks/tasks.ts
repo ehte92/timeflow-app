@@ -8,6 +8,17 @@ interface TasksResponse {
   count: number;
 }
 
+export type TaskSortBy =
+  | "createdAt"
+  | "updatedAt"
+  | "dueDate"
+  | "priority"
+  | "status"
+  | "title"
+  | "completedAt";
+
+export type TaskSortOrder = "asc" | "desc";
+
 export interface TaskFilters {
   status?: TaskStatus;
   priority?: TaskPriority;
@@ -22,6 +33,8 @@ export interface TaskFilters {
   dueDateFrom?: string; // ISO date string
   dueDateTo?: string; // ISO date string
   search?: string; // Text search across title and description
+  sortBy?: TaskSortBy;
+  sortOrder?: TaskSortOrder;
   limit?: number;
   offset?: number;
   [key: string]: unknown;
@@ -60,6 +73,8 @@ const taskApi = {
       searchParams.set("dueDateFrom", filters.dueDateFrom);
     if (filters?.dueDateTo) searchParams.set("dueDateTo", filters.dueDateTo);
     if (filters?.search) searchParams.set("search", filters.search);
+    if (filters?.sortBy) searchParams.set("sortBy", filters.sortBy);
+    if (filters?.sortOrder) searchParams.set("sortOrder", filters.sortOrder);
     if (filters?.limit) searchParams.set("limit", filters.limit.toString());
     if (filters?.offset) searchParams.set("offset", filters.offset.toString());
 

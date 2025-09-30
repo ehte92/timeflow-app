@@ -1,4 +1,17 @@
-import { and, desc, eq, gte, ilike, isNotNull, lt, lte, or } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  ilike,
+  isNotNull,
+  lt,
+  lte,
+  or,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth/auth-simple";
@@ -32,6 +45,18 @@ const taskFilterSchema = z.object({
   dueDateFrom: z.string().datetime().optional(),
   dueDateTo: z.string().datetime().optional(),
   search: z.string().max(255).optional(),
+  sortBy: z
+    .enum([
+      "createdAt",
+      "updatedAt",
+      "dueDate",
+      "priority",
+      "status",
+      "title",
+      "completedAt",
+    ])
+    .default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
   limit: z.string().default("50").transform(Number),
   offset: z.string().default("0").transform(Number),
 });
@@ -53,6 +78,8 @@ export async function GET(request: NextRequest) {
       dueDateFrom: searchParams.get("dueDateFrom") || undefined,
       dueDateTo: searchParams.get("dueDateTo") || undefined,
       search: searchParams.get("search") || undefined,
+      sortBy: searchParams.get("sortBy") || undefined,
+      sortOrder: searchParams.get("sortOrder") || undefined,
       limit: searchParams.get("limit") || "50",
       offset: searchParams.get("offset") || "0",
     });
@@ -157,11 +184,59 @@ export async function GET(request: NextRequest) {
       conditions.push(lte(tasks.dueDate, new Date(filters.dueDateTo)));
     }
 
+    // Dynamic sorting logic
+    let orderByClause: SQL | ReturnType<typeof asc> | ReturnType<typeof desc>;
+    const orderFn = filters.sortOrder === "asc" ? asc : desc;
+
+    switch (filters.sortBy) {
+      case "priority": {
+        // Custom priority ordering: urgent > high > medium > low
+        const priorityOrder = sql`CASE ${tasks.priority}
+          WHEN 'urgent' THEN 4
+          WHEN 'high' THEN 3
+          WHEN 'medium' THEN 2
+          WHEN 'low' THEN 1
+          ELSE 0
+        END`;
+        orderByClause =
+          filters.sortOrder === "asc"
+            ? asc(priorityOrder)
+            : desc(priorityOrder);
+        break;
+      }
+      case "dueDate":
+        // For nullable fields, nulls should come last
+        orderByClause =
+          filters.sortOrder === "asc"
+            ? sql`${tasks.dueDate} ASC NULLS LAST`
+            : sql`${tasks.dueDate} DESC NULLS LAST`;
+        break;
+      case "completedAt":
+        // For nullable fields, nulls should come last
+        orderByClause =
+          filters.sortOrder === "asc"
+            ? sql`${tasks.completedAt} ASC NULLS LAST`
+            : sql`${tasks.completedAt} DESC NULLS LAST`;
+        break;
+      case "title":
+        orderByClause = orderFn(tasks.title);
+        break;
+      case "status":
+        orderByClause = orderFn(tasks.status);
+        break;
+      case "updatedAt":
+        orderByClause = orderFn(tasks.updatedAt);
+        break;
+      default:
+        orderByClause = orderFn(tasks.createdAt);
+        break;
+    }
+
     const userTasks = await db
       .select()
       .from(tasks)
       .where(and(...conditions))
-      .orderBy(desc(tasks.createdAt))
+      .orderBy(orderByClause)
       .limit(filters.limit)
       .offset(filters.offset);
 

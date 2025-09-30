@@ -647,4 +647,96 @@ describe("Task Query Hooks", () => {
       });
     });
   });
+
+  describe("useTasks with sorting", () => {
+    it("should include sortBy and sortOrder in query parameters", async () => {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ tasks: [], count: 0 }),
+      });
+
+      const filters = {
+        sortBy: "title" as const,
+        sortOrder: "asc" as const,
+      };
+
+      const { result } = renderHook(() => useTasks(filters), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?sortBy=title&sortOrder=asc",
+      );
+    });
+
+    it("should handle all sortBy options", async () => {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
+
+      const sortByOptions = [
+        "createdAt",
+        "updatedAt",
+        "dueDate",
+        "priority",
+        "status",
+        "title",
+        "completedAt",
+      ] as const;
+
+      for (const sortBy of sortByOptions) {
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ tasks: [], count: 0 }),
+        });
+
+        const { result } = renderHook(
+          () => useTasks({ sortBy, sortOrder: "desc" }),
+          {
+            wrapper: createWrapper(queryClient),
+          },
+        );
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          `/api/tasks?sortBy=${sortBy}&sortOrder=desc`,
+        );
+      }
+    });
+
+    it("should combine sort parameters with filters", async () => {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ tasks: [], count: 0 }),
+      });
+
+      const filters = {
+        status: "todo" as const,
+        priority: "high" as const,
+        sortBy: "dueDate" as const,
+        sortOrder: "asc" as const,
+      };
+
+      const { result } = renderHook(() => useTasks(filters), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/tasks?status=todo&priority=high&sortBy=dueDate&sortOrder=asc",
+      );
+    });
+  });
 });

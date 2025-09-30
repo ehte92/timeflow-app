@@ -9,8 +9,13 @@ import { TaskList } from "@/components/tasks/task-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
+import { SortSelect } from "@/components/ui/sort-select";
 import type { Task, TaskPriority, TaskStatus } from "@/lib/db/schema/tasks";
-import type { TaskFilters } from "@/lib/query/hooks/tasks";
+import type {
+  TaskFilters,
+  TaskSortBy,
+  TaskSortOrder,
+} from "@/lib/query/hooks/tasks";
 
 export function TasksPageContent() {
   const searchParams = useSearchParams();
@@ -24,6 +29,8 @@ export function TasksPageContent() {
     TaskFilters["dateRange"] | "all"
   >("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<TaskSortBy>("createdAt");
+  const [sortOrder, setSortOrder] = useState<TaskSortOrder>("desc");
 
   // Auto-open form if new=true query parameter is present
   useEffect(() => {
@@ -65,7 +72,17 @@ export function TasksPageContent() {
     if (searchQuery.trim()) {
       filters.search = searchQuery.trim();
     }
+    filters.sortBy = sortBy;
+    filters.sortOrder = sortOrder;
     return filters;
+  };
+
+  const handleSortChange = (
+    newSortBy: TaskSortBy,
+    newSortOrder: TaskSortOrder,
+  ) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
   };
 
   // Helper function to clear all filters
@@ -74,6 +91,8 @@ export function TasksPageContent() {
     setPriorityFilter("all");
     setDateRangeFilter("all");
     setSearchQuery("");
+    setSortBy("createdAt");
+    setSortOrder("desc");
   };
 
   // Helper function to get active filter count
@@ -145,17 +164,24 @@ export function TasksPageContent() {
             <div className="bg-white rounded-lg shadow">
               <div className="p-6">
                 <div className="space-y-4">
-                  {/* Header and Search */}
+                  {/* Header, Sort, and Search */}
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold text-gray-900">
                       Your Tasks
                     </h2>
-                    <SearchInput
-                      value={searchQuery}
-                      onChange={setSearchQuery}
-                      placeholder="Search tasks..."
-                      className="w-64"
-                    />
+                    <div className="flex items-center gap-3">
+                      <SortSelect
+                        sortBy={sortBy}
+                        sortOrder={sortOrder}
+                        onSortChange={handleSortChange}
+                      />
+                      <SearchInput
+                        value={searchQuery}
+                        onChange={setSearchQuery}
+                        placeholder="Search tasks..."
+                        className="w-64"
+                      />
+                    </div>
                   </div>
 
                   {/* Filter Controls */}

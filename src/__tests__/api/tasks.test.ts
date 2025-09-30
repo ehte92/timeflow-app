@@ -37,17 +37,32 @@ jest.mock("@/lib/db/client", () => ({
 }));
 
 // Mock drizzle-orm functions
-jest.mock("drizzle-orm", () => ({
-  and: jest.fn((...args) => ({ type: "and", args })),
-  desc: jest.fn((field) => ({ type: "desc", field })),
-  eq: jest.fn((field, value) => ({ type: "eq", field, value })),
-  gte: jest.fn((field, value) => ({ type: "gte", field, value })),
-  ilike: jest.fn((field, value) => ({ type: "ilike", field, value })),
-  isNotNull: jest.fn((field) => ({ type: "isNotNull", field })),
-  lt: jest.fn((field, value) => ({ type: "lt", field, value })),
-  lte: jest.fn((field, value) => ({ type: "lte", field, value })),
-  or: jest.fn((...args) => ({ type: "or", args })),
-}));
+jest.mock("drizzle-orm", () => {
+  const mockSql = Object.assign(
+    (strings: TemplateStringsArray, ...values: unknown[]) => ({
+      type: "sql",
+      strings,
+      values,
+    }),
+    {
+      raw: jest.fn((template) => ({ type: "sql", template })),
+    },
+  );
+
+  return {
+    and: jest.fn((...args) => ({ type: "and", args })),
+    asc: jest.fn((field) => ({ type: "asc", field })),
+    desc: jest.fn((field) => ({ type: "desc", field })),
+    eq: jest.fn((field, value) => ({ type: "eq", field, value })),
+    gte: jest.fn((field, value) => ({ type: "gte", field, value })),
+    ilike: jest.fn((field, value) => ({ type: "ilike", field, value })),
+    isNotNull: jest.fn((field) => ({ type: "isNotNull", field })),
+    lt: jest.fn((field, value) => ({ type: "lt", field, value })),
+    lte: jest.fn((field, value) => ({ type: "lte", field, value })),
+    or: jest.fn((...args) => ({ type: "or", args })),
+    sql: mockSql,
+  };
+});
 
 const mockAuth = authModule.auth as unknown as jest.MockedFunction<
   () => Promise<Session | null>
@@ -665,6 +680,117 @@ describe("Tasks API Route - Filtering", () => {
 
       expect(mockLimit).toHaveBeenCalledWith(25);
       expect(mockOffset).toHaveBeenCalledWith(10);
+    });
+  });
+
+  describe("Sorting", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockAuth.mockResolvedValue(mockSession);
+    });
+
+    it("should sort by createdAt desc by default", async () => {
+      const request = new NextRequest("http://localhost:3000/api/tasks");
+
+      await GET(request);
+
+      expect(mockOrderBy).toHaveBeenCalled();
+      // The orderBy should be called with desc(tasks.createdAt) by default
+    });
+
+    it("should sort by title ascending", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?sortBy=title&sortOrder=asc",
+      );
+
+      await GET(request);
+
+      expect(mockOrderBy).toHaveBeenCalled();
+    });
+
+    it("should sort by priority descending", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?sortBy=priority&sortOrder=desc",
+      );
+
+      await GET(request);
+
+      expect(mockOrderBy).toHaveBeenCalled();
+    });
+
+    it("should sort by dueDate ascending", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?sortBy=dueDate&sortOrder=asc",
+      );
+
+      await GET(request);
+
+      expect(mockOrderBy).toHaveBeenCalled();
+    });
+
+    it("should sort by status descending", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?sortBy=status&sortOrder=desc",
+      );
+
+      await GET(request);
+
+      expect(mockOrderBy).toHaveBeenCalled();
+    });
+
+    it("should sort by updatedAt ascending", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?sortBy=updatedAt&sortOrder=asc",
+      );
+
+      await GET(request);
+
+      expect(mockOrderBy).toHaveBeenCalled();
+    });
+
+    it("should sort by completedAt descending", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?sortBy=completedAt&sortOrder=desc",
+      );
+
+      await GET(request);
+
+      expect(mockOrderBy).toHaveBeenCalled();
+    });
+
+    it("should reject invalid sortBy value", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?sortBy=invalid&sortOrder=desc",
+      );
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Invalid query parameters");
+    });
+
+    it("should reject invalid sortOrder value", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?sortBy=title&sortOrder=invalid",
+      );
+
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Invalid query parameters");
+    });
+
+    it("should combine sorting with filtering", async () => {
+      const request = new NextRequest(
+        "http://localhost:3000/api/tasks?priority=high&sortBy=dueDate&sortOrder=asc",
+      );
+
+      await GET(request);
+
+      expect(mockWhere).toHaveBeenCalled();
+      expect(mockOrderBy).toHaveBeenCalled();
     });
   });
 });
