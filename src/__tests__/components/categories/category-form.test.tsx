@@ -260,7 +260,7 @@ describe("CategoryForm", () => {
               message: "Category created successfully",
             }),
           }),
-        100,
+        200,
       ),
     );
     (global.fetch as jest.Mock).mockReturnValue(slowResolve);
@@ -273,15 +273,20 @@ describe("CategoryForm", () => {
     });
 
     await user.type(nameInput, "Work");
-    await user.click(submitButton);
 
-    // Check that button shows loading state
+    // Click and immediately check for loading state
+    const clickPromise = user.click(submitButton);
+
+    // Check that button shows loading state immediately
     await waitFor(
       () => {
-        expect(screen.getByText(/creating/i)).toBeInTheDocument();
+        expect(screen.getByText(/creating\.\.\./i)).toBeInTheDocument();
       },
-      { timeout: 500 },
+      { timeout: 100 },
     );
+
+    // Wait for click to complete
+    await clickPromise;
   });
 
   it("should render color preview", () => {
