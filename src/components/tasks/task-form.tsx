@@ -1,9 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { CategoryCreateDialog } from "@/components/categories/category-create-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +14,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -20,6 +24,7 @@ import {
   type TaskPriority,
   taskPriorityEnum,
 } from "@/lib/db/schema/tasks";
+import { useCategories } from "@/lib/query/hooks/categories";
 import { useCreateTask, useUpdateTask } from "@/lib/query/hooks/tasks";
 
 // Form validation schema
@@ -50,8 +55,12 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
   const router = useRouter();
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useCategories();
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
   const isEditing = !!task;
+  const categories = categoriesData?.categories || [];
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskFormSchema),
@@ -200,6 +209,74 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
           )}
         </div>
 
+        {/* Category Field */}
+        <div className="space-y-2">
+          <Label htmlFor="category">Category</Label>
+          <Select
+            value={form.watch("categoryId") || "none"}
+            onValueChange={(value) =>
+              form.setValue(
+                "categoryId",
+                value === "none" ? undefined : value,
+                {
+                  shouldValidate: true,
+                },
+              )
+            }
+            disabled={
+              createTaskMutation.isPending ||
+              updateTaskMutation.isPending ||
+              categoriesLoading
+            }
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={
+                  categoriesLoading
+                    ? "Loading..."
+                    : "Select category (optional)"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No Category</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="h-3 w-3 rounded-sm"
+                      style={{ backgroundColor: category.color }}
+                    />
+                    {category.name}
+                  </div>
+                </SelectItem>
+              ))}
+
+              {/* Separator before Create option */}
+              <SelectSeparator />
+
+              {/* Create New Category Option */}
+              <button
+                type="button"
+                className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setCategoryDialogOpen(true);
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                <span>Create New Category</span>
+              </button>
+            </SelectContent>
+          </Select>
+          {form.formState.errors.categoryId && (
+            <p className="text-sm text-red-600">
+              {form.formState.errors.categoryId.message}
+            </p>
+          )}
+        </div>
+
         {/* Due Date Field */}
         <div className="space-y-2">
           <Label htmlFor="dueDate">Due Date</Label>
@@ -251,6 +328,17 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
           </Button>
         </div>
       </form>
+
+      {/* Category Creation Dialog */}
+      <CategoryCreateDialog
+        open={categoryDialogOpen}
+        onOpenChange={setCategoryDialogOpen}
+        onSuccess={(category) => {
+          // Auto-select the newly created category
+          form.setValue("categoryId", category.id, { shouldValidate: true });
+          setCategoryDialogOpen(false);
+        }}
+      />
     </div>
   );
 }

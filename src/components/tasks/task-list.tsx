@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Task, TaskPriority, TaskStatus } from "@/lib/db/schema/tasks";
+import { useCategories } from "@/lib/query/hooks/categories";
 import {
   type TaskFilters,
   useDeleteTask,
@@ -41,6 +42,7 @@ const statusIcons: Record<
 export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
   // Use React Query hooks
   const { data, isLoading, error, refetch } = useTasks(filters);
+  const { data: categoriesData } = useCategories();
   const deleteTaskMutation = useDeleteTask();
   const toggleStatusMutation = useToggleTaskStatus();
 
@@ -49,6 +51,13 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
 
   const tasks = data?.tasks || [];
+  const categories = categoriesData?.categories || [];
+
+  // Helper to get category by ID
+  const getCategoryById = (categoryId: string | null) => {
+    if (!categoryId) return null;
+    return categories.find((cat) => cat.id === categoryId);
+  };
 
   const handleToggleStatus = async (task: Task) => {
     try {
@@ -201,6 +210,23 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
                 </div>
 
                 <div className="flex items-center space-x-2 ml-4">
+                  {/* Category Badge */}
+                  {(() => {
+                    const category = getCategoryById(task.categoryId);
+                    return category ? (
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-1.5"
+                      >
+                        <div
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: category.color }}
+                        />
+                        {category.name}
+                      </Badge>
+                    ) : null;
+                  })()}
+                  {/* Priority Badge */}
                   <Badge
                     className={priorityColors[task.priority]}
                     variant="secondary"

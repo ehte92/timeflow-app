@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { SortSelect } from "@/components/ui/sort-select";
 import type { Task, TaskPriority, TaskStatus } from "@/lib/db/schema/tasks";
+import { useCategories } from "@/lib/query/hooks/categories";
 import type {
   TaskFilters,
   TaskSortBy,
@@ -19,18 +20,22 @@ import type {
 
 export function TasksPageContent() {
   const searchParams = useSearchParams();
+  const { data: categoriesData } = useCategories();
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | "all">(
     "all",
   );
+  const [categoryFilter, setCategoryFilter] = useState<string | "all">("all");
   const [dateRangeFilter, setDateRangeFilter] = useState<
     TaskFilters["dateRange"] | "all"
   >("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<TaskSortBy>("createdAt");
   const [sortOrder, setSortOrder] = useState<TaskSortOrder>("desc");
+
+  const categories = categoriesData?.categories || [];
 
   // Auto-open form if new=true query parameter is present
   useEffect(() => {
@@ -66,6 +71,9 @@ export function TasksPageContent() {
     if (priorityFilter !== "all") {
       filters.priority = priorityFilter;
     }
+    if (categoryFilter !== "all") {
+      filters.categoryId = categoryFilter;
+    }
     if (dateRangeFilter !== "all") {
       filters.dateRange = dateRangeFilter;
     }
@@ -89,6 +97,7 @@ export function TasksPageContent() {
   const clearAllFilters = () => {
     setStatusFilter("all");
     setPriorityFilter("all");
+    setCategoryFilter("all");
     setDateRangeFilter("all");
     setSearchQuery("");
     setSortBy("createdAt");
@@ -100,6 +109,7 @@ export function TasksPageContent() {
     let count = 0;
     if (statusFilter !== "all") count++;
     if (priorityFilter !== "all") count++;
+    if (categoryFilter !== "all") count++;
     if (dateRangeFilter !== "all") count++;
     if (searchQuery.trim()) count++;
     return count;
@@ -292,6 +302,51 @@ export function TasksPageContent() {
                           >
                             Urgent
                           </Badge>
+                        </div>
+                      </div>
+
+                      {/* Category Filters */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-700">
+                          Category:
+                        </span>
+                        <div className="flex gap-1 flex-wrap">
+                          <Badge
+                            variant={
+                              categoryFilter === "all" ? "default" : "outline"
+                            }
+                            className="cursor-pointer"
+                            onClick={() => setCategoryFilter("all")}
+                          >
+                            All
+                          </Badge>
+                          <Badge
+                            variant={
+                              categoryFilter === "" ? "default" : "outline"
+                            }
+                            className="cursor-pointer"
+                            onClick={() => setCategoryFilter("")}
+                          >
+                            No Category
+                          </Badge>
+                          {categories.map((category) => (
+                            <Badge
+                              key={category.id}
+                              variant={
+                                categoryFilter === category.id
+                                  ? "default"
+                                  : "outline"
+                              }
+                              className="cursor-pointer flex items-center gap-1.5"
+                              onClick={() => setCategoryFilter(category.id)}
+                            >
+                              <div
+                                className="h-2 w-2 rounded-full"
+                                style={{ backgroundColor: category.color }}
+                              />
+                              {category.name}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
 

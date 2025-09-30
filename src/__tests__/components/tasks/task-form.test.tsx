@@ -314,9 +314,9 @@ describe("TaskForm", () => {
 
     await user.type(screen.getByLabelText(/task title/i), "Test Task");
 
-    // Test that priority select exists
-    const prioritySelect = screen.getByRole("combobox");
-    expect(prioritySelect).toBeInTheDocument();
+    // Test that select fields exist (priority and category)
+    const comboboxes = screen.getAllByRole("combobox");
+    expect(comboboxes.length).toBeGreaterThanOrEqual(2); // Priority and Category
 
     const submitButton = screen.getByRole("button", { name: /create task/i });
     await user.click(submitButton);

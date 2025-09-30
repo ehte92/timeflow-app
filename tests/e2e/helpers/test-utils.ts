@@ -274,6 +274,23 @@ export class TasksPageHelper {
       expect(taskText?.toLowerCase()).toContain(searchTerm.toLowerCase());
     }
   }
+
+  // Category filtering methods
+  async clickCategoryFilter(categoryName: string) {
+    await this.page.getByRole("button", { name: categoryName }).click();
+  }
+
+  async expectCategoryFilterSectionVisible() {
+    await expect(this.page.getByText("Category:")).toBeVisible();
+  }
+
+  async expectTaskWithCategory(taskTitle: string, categoryName: string) {
+    const taskRow = this.page
+      .locator(`text=${taskTitle}`)
+      .locator("..")
+      .locator("..");
+    await expect(taskRow.getByText(categoryName)).toBeVisible();
+  }
 }
 
 export class AuthHelper {
