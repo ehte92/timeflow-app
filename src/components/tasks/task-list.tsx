@@ -3,6 +3,7 @@
 import { CheckCircle, Circle, Clock, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { DeleteConfirmationDialog } from "@/components/tasks/delete-confirmation-dialog";
+import { TaskDetailPanel } from "@/components/tasks/task-detail-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -49,6 +50,9 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
   // Dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+
+  // Detail panel state
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const tasks = data?.tasks || [];
   const categories = categoriesData?.categories || [];
@@ -162,16 +166,22 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
         return (
           <Card
             key={task.id}
-            className={`transition-all hover:shadow-md ${
+            className={`transition-all hover:shadow-md cursor-pointer ${
               isCompleted ? "opacity-75" : ""
             }`}
           >
-            <CardHeader className="pb-3">
+            <CardHeader
+              className="pb-3"
+              onClick={() => setSelectedTaskId(task.id)}
+            >
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-3 flex-1">
                   <button
                     type="button"
-                    onClick={() => handleToggleStatus(task)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleStatus(task);
+                    }}
                     className="mt-0.5 text-gray-400 hover:text-blue-600 transition-colors"
                     disabled={toggleStatusMutation.isPending}
                   >
@@ -237,7 +247,10 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onEditTask(task)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditTask(task);
+                      }}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -245,7 +258,10 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDeleteClick(task.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(task.id);
+                    }}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     disabled={deleteTaskMutation.isPending}
                   >
@@ -295,6 +311,12 @@ export function TaskList({ onEditTask, onDeleteTask, filters }: TaskListProps) {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
         isLoading={deleteTaskMutation.isPending}
+      />
+
+      <TaskDetailPanel
+        taskId={selectedTaskId}
+        open={!!selectedTaskId}
+        onOpenChange={(open) => !open && setSelectedTaskId(null)}
       />
     </div>
   );
