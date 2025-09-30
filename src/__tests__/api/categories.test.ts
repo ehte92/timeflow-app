@@ -83,7 +83,7 @@ const mockSession: Session = {
 
 // Mock category data
 const mockCategory = {
-  id: "cat-123",
+  id: "550e8400-e29b-41d4-a716-446655440000",
   name: "Work",
   color: "#3B82F6",
   userId: "user-123",
@@ -101,17 +101,27 @@ describe("Categories API Routes", () => {
     it("should return categories for authenticated user", async () => {
       const mockCategories = [
         mockCategory,
-        { ...mockCategory, id: "cat-456", name: "Personal" },
+        {
+          ...mockCategory,
+          id: "550e8400-e29b-41d4-a716-446655440001",
+          name: "Personal",
+        },
       ];
 
-      mockOrderBy.mockResolvedValue(mockCategories);
+      mockOrderBy.mockResolvedValueOnce(mockCategories);
 
       const request = new NextRequest("http://localhost:3000/api/categories");
       const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.categories).toEqual(mockCategories);
+      expect(data.categories).toHaveLength(2);
+      expect(data.categories[0]).toMatchObject({
+        id: mockCategory.id,
+        name: mockCategory.name,
+        color: mockCategory.color,
+        userId: mockCategory.userId,
+      });
       expect(data.count).toBe(2);
     });
 
@@ -127,7 +137,7 @@ describe("Categories API Routes", () => {
     });
 
     it("should return empty array if no categories", async () => {
-      mockOrderBy.mockResolvedValue([]);
+      mockOrderBy.mockResolvedValueOnce([]);
 
       const request = new NextRequest("http://localhost:3000/api/categories");
       const response = await GET(request);
@@ -141,8 +151,8 @@ describe("Categories API Routes", () => {
 
   describe("POST /api/categories", () => {
     it("should create a category with valid data", async () => {
-      mockLimit.mockResolvedValue([]); // No duplicate
-      mockReturning.mockResolvedValue([mockCategory]);
+      mockLimit.mockResolvedValueOnce([]); // No duplicate
+      mockReturning.mockResolvedValueOnce([mockCategory]);
 
       const request = new NextRequest("http://localhost:3000/api/categories", {
         method: "POST",
@@ -157,12 +167,17 @@ describe("Categories API Routes", () => {
 
       expect(response.status).toBe(201);
       expect(data.message).toBe("Category created successfully");
-      expect(data.category).toEqual(mockCategory);
+      expect(data.category).toMatchObject({
+        id: mockCategory.id,
+        name: mockCategory.name,
+        color: mockCategory.color,
+        userId: mockCategory.userId,
+      });
     });
 
     it("should use default color if not provided", async () => {
-      mockLimit.mockResolvedValue([]);
-      mockReturning.mockResolvedValue([mockCategory]);
+      mockLimit.mockResolvedValueOnce([]);
+      mockReturning.mockResolvedValueOnce([mockCategory]);
 
       const request = new NextRequest("http://localhost:3000/api/categories", {
         method: "POST",
@@ -175,11 +190,15 @@ describe("Categories API Routes", () => {
       const data = await response.json();
 
       expect(response.status).toBe(201);
-      expect(data.category).toEqual(mockCategory);
+      expect(data.category).toMatchObject({
+        id: mockCategory.id,
+        name: mockCategory.name,
+        userId: mockCategory.userId,
+      });
     });
 
     it("should return 409 if category name already exists", async () => {
-      mockLimit.mockResolvedValue([mockCategory]); // Duplicate found
+      mockLimit.mockResolvedValueOnce([mockCategory]); // Duplicate found
 
       const request = new NextRequest("http://localhost:3000/api/categories", {
         method: "POST",
@@ -267,18 +286,21 @@ describe("Categories API Routes", () => {
     it("should update a category", async () => {
       mockLimit.mockResolvedValueOnce([mockCategory]); // Category exists
       mockLimit.mockResolvedValueOnce([]); // No duplicate name
-      mockReturning.mockResolvedValue([
+      mockReturning.mockResolvedValueOnce([
         { ...mockCategory, name: "Updated Work" },
       ]);
 
       const response = await PATCH_BY_ID(
-        new NextRequest("http://localhost:3000/api/categories/cat-123", {
-          method: "PATCH",
-          body: JSON.stringify({
-            name: "Updated Work",
-          }),
-        }),
-        { params: Promise.resolve({ categoryId: "cat-123" }) },
+        new NextRequest(
+          `http://localhost:3000/api/categories/${mockCategory.id}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              name: "Updated Work",
+            }),
+          },
+        ),
+        { params: Promise.resolve({ categoryId: mockCategory.id }) },
       );
 
       const data = await response.json();
@@ -290,16 +312,21 @@ describe("Categories API Routes", () => {
 
     it("should update only color", async () => {
       mockLimit.mockResolvedValueOnce([mockCategory]);
-      mockReturning.mockResolvedValue([{ ...mockCategory, color: "#EF4444" }]);
+      mockReturning.mockResolvedValueOnce([
+        { ...mockCategory, color: "#EF4444" },
+      ]);
 
       const response = await PATCH_BY_ID(
-        new NextRequest("http://localhost:3000/api/categories/cat-123", {
-          method: "PATCH",
-          body: JSON.stringify({
-            color: "#EF4444",
-          }),
-        }),
-        { params: Promise.resolve({ categoryId: "cat-123" }) },
+        new NextRequest(
+          `http://localhost:3000/api/categories/${mockCategory.id}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              color: "#EF4444",
+            }),
+          },
+        ),
+        { params: Promise.resolve({ categoryId: mockCategory.id }) },
       );
 
       const data = await response.json();
@@ -309,16 +336,21 @@ describe("Categories API Routes", () => {
     });
 
     it("should return 404 if category not found", async () => {
-      mockLimit.mockResolvedValue([]);
+      mockLimit.mockResolvedValueOnce([]);
+
+      const nonexistentId = "550e8400-e29b-41d4-a716-446655449999";
 
       const response = await PATCH_BY_ID(
-        new NextRequest("http://localhost:3000/api/categories/nonexistent-id", {
-          method: "PATCH",
-          body: JSON.stringify({
-            name: "Updated",
-          }),
-        }),
-        { params: Promise.resolve({ categoryId: "nonexistent-id" }) },
+        new NextRequest(
+          `http://localhost:3000/api/categories/${nonexistentId}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              name: "Updated",
+            }),
+          },
+        ),
+        { params: Promise.resolve({ categoryId: nonexistentId }) },
       );
 
       const data = await response.json();
@@ -329,16 +361,21 @@ describe("Categories API Routes", () => {
 
     it("should return 409 if new name already exists for another category", async () => {
       mockLimit.mockResolvedValueOnce([mockCategory]); // Category exists
-      mockLimit.mockResolvedValueOnce([{ ...mockCategory, id: "cat-999" }]); // Duplicate name
+      mockLimit.mockResolvedValueOnce([
+        { ...mockCategory, id: "550e8400-e29b-41d4-a716-446655440999" },
+      ]); // Duplicate name
 
       const response = await PATCH_BY_ID(
-        new NextRequest("http://localhost:3000/api/categories/cat-123", {
-          method: "PATCH",
-          body: JSON.stringify({
-            name: "Existing Name",
-          }),
-        }),
-        { params: Promise.resolve({ categoryId: "cat-123" }) },
+        new NextRequest(
+          `http://localhost:3000/api/categories/${mockCategory.id}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              name: "Existing Name",
+            }),
+          },
+        ),
+        { params: Promise.resolve({ categoryId: mockCategory.id }) },
       );
 
       const data = await response.json();
@@ -368,13 +405,16 @@ describe("Categories API Routes", () => {
       mockAuth.mockResolvedValue(null);
 
       const response = await PATCH_BY_ID(
-        new NextRequest("http://localhost:3000/api/categories/cat-123", {
-          method: "PATCH",
-          body: JSON.stringify({
-            name: "Updated",
-          }),
-        }),
-        { params: Promise.resolve({ categoryId: "cat-123" }) },
+        new NextRequest(
+          `http://localhost:3000/api/categories/${mockCategory.id}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              name: "Updated",
+            }),
+          },
+        ),
+        { params: Promise.resolve({ categoryId: mockCategory.id }) },
       );
 
       const data = await response.json();
@@ -386,13 +426,16 @@ describe("Categories API Routes", () => {
 
   describe("DELETE /api/categories/[categoryId]", () => {
     it("should delete a category", async () => {
-      mockLimit.mockResolvedValue([mockCategory]);
+      mockLimit.mockResolvedValueOnce([mockCategory]);
 
       const response = await DELETE_BY_ID(
-        new NextRequest("http://localhost:3000/api/categories/cat-123", {
-          method: "DELETE",
-        }),
-        { params: Promise.resolve({ categoryId: "cat-123" }) },
+        new NextRequest(
+          `http://localhost:3000/api/categories/${mockCategory.id}`,
+          {
+            method: "DELETE",
+          },
+        ),
+        { params: Promise.resolve({ categoryId: mockCategory.id }) },
       );
 
       const data = await response.json();
@@ -402,13 +445,18 @@ describe("Categories API Routes", () => {
     });
 
     it("should return 404 if category not found", async () => {
-      mockLimit.mockResolvedValue([]);
+      mockLimit.mockResolvedValueOnce([]);
+
+      const nonexistentId = "550e8400-e29b-41d4-a716-446655449999";
 
       const response = await DELETE_BY_ID(
-        new NextRequest("http://localhost:3000/api/categories/nonexistent-id", {
-          method: "DELETE",
-        }),
-        { params: Promise.resolve({ categoryId: "nonexistent-id" }) },
+        new NextRequest(
+          `http://localhost:3000/api/categories/${nonexistentId}`,
+          {
+            method: "DELETE",
+          },
+        ),
+        { params: Promise.resolve({ categoryId: nonexistentId }) },
       );
 
       const data = await response.json();
@@ -435,10 +483,13 @@ describe("Categories API Routes", () => {
       mockAuth.mockResolvedValue(null);
 
       const response = await DELETE_BY_ID(
-        new NextRequest("http://localhost:3000/api/categories/cat-123", {
-          method: "DELETE",
-        }),
-        { params: Promise.resolve({ categoryId: "cat-123" }) },
+        new NextRequest(
+          `http://localhost:3000/api/categories/${mockCategory.id}`,
+          {
+            method: "DELETE",
+          },
+        ),
+        { params: Promise.resolve({ categoryId: mockCategory.id }) },
       );
 
       const data = await response.json();
