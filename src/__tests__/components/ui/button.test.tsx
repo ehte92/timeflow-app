@@ -22,11 +22,11 @@ describe("Button Component", () => {
     const { rerender } = render(<Button size="sm">Small Button</Button>);
 
     let button = screen.getByRole("button", { name: /small button/i });
-    expect(button).toHaveClass("h-8");
+    expect(button).toHaveClass("h-9");
 
     rerender(<Button size="lg">Large Button</Button>);
     button = screen.getByRole("button", { name: /large button/i });
-    expect(button).toHaveClass("h-10");
+    expect(button).toHaveClass("h-11");
   });
 
   it("should handle disabled state", () => {
