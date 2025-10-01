@@ -58,9 +58,15 @@ describe("TasksPageContent - Basic Functionality", () => {
 
       await waitFor(() => {
         // Check for filter dropdown buttons
-        expect(screen.getByRole("button", { name: /all status/i })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /all priority/i })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /all dates/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: /all status/i }),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: /all priority/i }),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: /all dates/i }),
+        ).toBeInTheDocument();
       });
     });
 
