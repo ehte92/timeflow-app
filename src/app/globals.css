@@ -47,7 +47,7 @@
   /* Border Radius - Premium 12px */
   --radius: 0.75rem;
 
-  /* Slate + Indigo Color System */
+  /* Slate + Emerald Color System */
   --background: #ffffff;
   --foreground: #0f172a; /* Slate-900 */
 
@@ -57,8 +57,8 @@
   --popover: #ffffff;
   --popover-foreground: #0f172a;
 
-  /* Primary: Indigo-600 */
-  --primary: #4f46e5;
+  /* Primary: Emerald-600 */
+  --primary: #10b981;
   --primary-foreground: #ffffff;
 
   /* Secondary: Slate-100 */
@@ -69,9 +69,9 @@
   --muted: #f1f5f9;
   --muted-foreground: #64748b; /* Slate-500 */
 
-  /* Accent: Indigo-100 */
-  --accent: #e0e7ff;
-  --accent-foreground: #4f46e5;
+  /* Accent: Emerald-100 */
+  --accent: #d1fae5;
+  --accent-foreground: #10b981;
 
   /* Destructive: Rose-600 */
   --destructive: #e11d48;
@@ -80,7 +80,7 @@
   /* Borders & Inputs */
   --border: #e2e8f0; /* Slate-200 */
   --input: #e2e8f0;
-  --ring: #4f46e5; /* Focus ring = primary */
+  --ring: #10b981; /* Focus ring = primary */
 
   /* Success */
   --success: #059669; /* Emerald-600 */
@@ -91,21 +91,21 @@
   --warning-foreground: #ffffff;
 
   /* Chart colors */
-  --chart-1: #4f46e5; /* Indigo-600 */
-  --chart-2: #0ea5e9; /* Sky-500 */
-  --chart-3: #10b981; /* Emerald-500 */
+  --chart-1: #10b981; /* Emerald-500 */
+  --chart-2: #14b8a6; /* Teal-500 */
+  --chart-3: #0ea5e9; /* Sky-500 */
   --chart-4: #f59e0b; /* Amber-500 */
   --chart-5: #ef4444; /* Red-500 */
 
   /* Sidebar */
   --sidebar: #f8fafc; /* Slate-50 */
   --sidebar-foreground: #0f172a;
-  --sidebar-primary: #4f46e5;
+  --sidebar-primary: #10b981;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f1f5f9;
   --sidebar-accent-foreground: #0f172a;
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #4f46e5;
+  --sidebar-ring: #10b981;
 
   /* Premium Spacing System - 8px grid */
   --spacing-xs: 0.25rem; /* 4px */

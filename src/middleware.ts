@@ -10,7 +10,7 @@ export default auth((req) => {
   const isProtectedRoute = protectedRoutes.some((route) =>
     nextUrl.pathname.startsWith(route),
   );
-  const isAuthRoute = nextUrl.pathname.startsWith("/auth");
+  const isAuthRoute = nextUrl.pathname.startsWith("/auth") || nextUrl.pathname === "/";
 
   // Allow API routes and static files to pass through
   if (
