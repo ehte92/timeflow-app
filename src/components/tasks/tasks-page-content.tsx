@@ -142,9 +142,7 @@ export function TasksPageContent() {
       <div className="hidden lg:flex items-center justify-between px-4 pt-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Tasks</h1>
-          <p className="text-slate-600">
-            Manage your tasks and stay organized
-          </p>
+          <p className="text-slate-600">Manage your tasks and stay organized</p>
         </div>
         <Button
           onClick={() => {

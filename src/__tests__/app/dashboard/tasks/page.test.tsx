@@ -66,7 +66,9 @@ describe("Tasks Page Smoke Test", () => {
     renderWithProviders(<TasksPageContent />);
 
     // Both mobile and desktop headers exist (two "Tasks" headings)
-    expect(screen.getAllByRole("heading", { level: 1, name: /^tasks$/i })).toHaveLength(2);
+    expect(
+      screen.getAllByRole("heading", { level: 1, name: /^tasks$/i }),
+    ).toHaveLength(2);
     expect(
       screen.getByText(/manage your tasks and stay organized/i),
     ).toBeInTheDocument();
