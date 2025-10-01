@@ -1,34 +1,53 @@
-import type { LucideIcon } from "lucide-react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
   value: string | number;
   label: string;
   trend?: {
     value: number;
     isPositive: boolean;
   };
+  borderColor?: string;
+  iconBgColor?: string;
 }
 
 const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
-  ({ className, icon: Icon, value, label, trend, ...props }, ref) => {
+  (
+    {
+      className,
+      icon: Icon,
+      value,
+      label,
+      trend,
+      borderColor = "border-t-primary",
+      iconBgColor = "bg-primary/10",
+      ...props
+    },
+    ref,
+  ) => {
     return (
       <div
         ref={ref}
         className={cn(
-          "rounded-lg border border-border bg-card shadow-sm hover:shadow-md transition-smooth hover-lift p-8",
+          "rounded-lg border border-border bg-card shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 p-8 border-t-4",
+          borderColor,
           className,
         )}
         {...props}
       >
-        <div className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-6">
           {/* Icon */}
           <div className="flex items-center justify-between">
-            <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-              <Icon className="size-6 text-primary" />
+            <div
+              className={cn(
+                "flex size-12 items-center justify-center rounded-lg",
+                iconBgColor,
+              )}
+            >
+              <Icon className="size-6" />
             </div>
             {trend && (
               <div
@@ -49,8 +68,8 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
 
           {/* Value */}
           <div className="space-y-1">
-            <p className="text-3xl font-bold text-foreground">{value}</p>
-            <p className="text-sm text-muted-foreground">{label}</p>
+            <p className="text-5xl font-bold text-foreground">{value}</p>
+            <p className="text-sm text-muted-foreground font-medium">{label}</p>
           </div>
         </div>
       </div>

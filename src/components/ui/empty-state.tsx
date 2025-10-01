@@ -1,16 +1,11 @@
-import type { LucideIcon } from "lucide-react";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   description?: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
+  action?: React.ReactNode;
 }
 
 const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
@@ -40,11 +35,7 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         )}
 
         {/* Action Button */}
-        {action && (
-          <Button onClick={action.onClick} size="default">
-            {action.label}
-          </Button>
-        )}
+        {action && <div>{action}</div>}
       </div>
     );
   },

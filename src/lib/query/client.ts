@@ -47,6 +47,9 @@ export const queryKeys = {
       ["tasks", "list", filters] as const,
     details: () => ["tasks", "detail"] as const,
     detail: (id: string) => ["tasks", "detail", id] as const,
+    stats: () => ["tasks", "stats"] as const,
+    today: () => ["tasks", "today"] as const,
+    recent: () => ["tasks", "recent"] as const,
   },
   categories: {
     all: () => ["categories"] as const,
