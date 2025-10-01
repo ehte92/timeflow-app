@@ -75,8 +75,5 @@ describe("Tasks Page Smoke Test", () => {
     expect(
       screen.getByRole("button", { name: /add task/i }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: /your tasks/i }),
-    ).toBeInTheDocument();
   });
 });

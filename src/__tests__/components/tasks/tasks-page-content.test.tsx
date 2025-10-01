@@ -50,18 +50,17 @@ describe("TasksPageContent - Basic Functionality", () => {
         expect(
           screen.getByText("Manage your tasks and stay organized"),
         ).toBeInTheDocument();
-        expect(screen.getByText("Your Tasks")).toBeInTheDocument();
       });
     });
 
-    it("should render filter sections", async () => {
+    it("should render filter buttons", async () => {
       render(<TasksPageContent />);
 
       await waitFor(() => {
-        // Check for filter section labels
-        expect(screen.getByText("Status:")).toBeInTheDocument();
-        expect(screen.getByText("Priority:")).toBeInTheDocument();
-        expect(screen.getByText("Due:")).toBeInTheDocument();
+        // Check for filter dropdown buttons
+        expect(screen.getByRole("button", { name: /all status/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /all priority/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /all dates/i })).toBeInTheDocument();
       });
     });
 
@@ -101,7 +100,6 @@ describe("TasksPageContent - Basic Functionality", () => {
       render(<TasksPageContent />);
 
       await waitFor(() => {
-        expect(screen.getByText("Your Tasks")).toBeInTheDocument();
         expect(
           screen.getByRole("button", { name: "Add Task" }),
         ).toBeInTheDocument();

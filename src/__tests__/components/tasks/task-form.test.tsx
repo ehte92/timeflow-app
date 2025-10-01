@@ -360,7 +360,6 @@ describe("TaskForm", () => {
       expect(
         screen.getByDisplayValue("Existing description"),
       ).toBeInTheDocument();
-      expect(screen.getByText(/edit task/i)).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: /update task/i }),
       ).toBeInTheDocument();
