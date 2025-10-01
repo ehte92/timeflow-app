@@ -133,7 +133,11 @@ export function AuthForm({ mode }: AuthFormProps) {
         <Label htmlFor="email">Email</Label>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <IconMail size={18} className="text-muted-foreground" stroke={1.5} />
+            <IconMail
+              size={18}
+              className="text-muted-foreground"
+              stroke={1.5}
+            />
           </div>
           <Input
             id="email"
@@ -183,7 +187,9 @@ export function AuthForm({ mode }: AuthFormProps) {
             />
             <div
               className={`h-1 flex-1 rounded-full transition-all ${
-                passwordStrength === "strong" ? "bg-emerald-500" : "bg-slate-200"
+                passwordStrength === "strong"
+                  ? "bg-emerald-500"
+                  : "bg-slate-200"
               }`}
             />
           </div>
