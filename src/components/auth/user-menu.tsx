@@ -2,17 +2,24 @@
 
 import {
   IconChevronUp,
+  IconDeviceDesktop,
   IconLogout,
+  IconMoon,
   IconSettings,
+  IconSun,
   IconUser,
 } from "@tabler/icons-react";
 import { signOut, useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -33,6 +40,7 @@ function getInitials(name: string | null | undefined): string {
 
 export function UserMenu() {
   const { data: session, status } = useSession();
+  const { setTheme } = useTheme();
 
   const handleSignOut = async () => {
     try {
@@ -98,6 +106,27 @@ export function UserMenu() {
               <IconSettings className="mr-2 size-4" />
               <span>Settings</span>
             </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <IconSun className="mr-2 size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <IconMoon className="absolute mr-2 size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="ml-2">Theme</span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  <IconSun className="mr-2 size-4" />
+                  <span>Light</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  <IconMoon className="mr-2 size-4" />
+                  <span>Dark</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
+                  <IconDeviceDesktop className="mr-2 size-4" />
+                  <span>System</span>
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
               <IconLogout className="mr-2 size-4" />

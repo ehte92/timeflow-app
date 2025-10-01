@@ -104,9 +104,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 bg-slate-50">
+    <div className="flex flex-1 flex-col gap-4 p-4 bg-muted">
       {/* Mobile-only header */}
-      <header className="flex lg:hidden h-16 shrink-0 items-center gap-2 border-b px-4 bg-white">
+      <header className="flex lg:hidden h-16 shrink-0 items-center gap-2 border-b px-4 bg-background">
         <SidebarTrigger className="-ml-1" />
         <div className="flex-1">
           <h1 className="text-lg font-semibold">Dashboard</h1>
@@ -118,14 +118,14 @@ export default function DashboardPage() {
         <Card className="p-10 mb-8 border-t-4 border-t-emerald-500">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-slate-900 mb-2">
+              <h1 className="text-4xl font-bold text-foreground mb-2">
                 Welcome back, {session.user.name}!
               </h1>
-              <p className="text-base text-slate-600">
+              <p className="text-base text-muted-foreground">
                 Here's what's happening with your tasks today.
               </p>
             </div>
-            <div className="hidden md:flex items-center gap-2 text-slate-600">
+            <div className="hidden md:flex items-center gap-2 text-muted-foreground">
               <IconCalendar className="size-5" />
               <span className="text-sm font-medium">
                 {format(new Date(), "EEEE, MMMM d, yyyy")}
@@ -179,19 +179,19 @@ export default function DashboardPage() {
 
         {/* Today's Focus */}
         <Card className="p-8 mb-8">
-          <div className="mb-8 pb-4 border-b border-slate-200">
+          <div className="mb-8 pb-4 border-b">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                <h2 className="text-3xl font-bold text-foreground mb-2">
                   Today's Focus
                 </h2>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-muted-foreground">
                   Your top priorities for today
                 </p>
               </div>
               <Link
                 href="/dashboard/tasks"
-                className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors mt-1"
+                className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors mt-1"
               >
                 View All
                 <IconArrowRight className="size-4" />
@@ -224,17 +224,17 @@ export default function DashboardPage() {
                   className="block"
                 >
                   <div
-                    className={`flex items-center gap-4 p-5 rounded-lg border border-slate-300 hover:border-slate-400 hover:shadow-lg hover:-translate-y-0.5 transition-all border-l-4 ${priorityBorderColors[task.priority]}`}
+                    className={`flex items-center gap-4 p-5 rounded-lg border hover:border-primary/50 hover:shadow-lg hover:-translate-y-0.5 transition-all border-l-4 ${priorityBorderColors[task.priority]}`}
                   >
                     <div className="flex-shrink-0">
                       {getStatusIcon(task.status)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-slate-900 truncate">
+                      <h3 className="font-medium text-foreground truncate">
                         {task.title}
                       </h3>
                       {task.dueDate && (
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Due: {format(new Date(task.dueDate), "p")}
                         </p>
                       )}
@@ -277,14 +277,14 @@ export default function DashboardPage() {
 
         {/* Recent Activity */}
         <Card className="p-8">
-          <div className="mb-8 pb-4 border-b border-slate-200">
+          <div className="mb-8 pb-4 border-b">
             <div className="flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-slate-900">
+              <h2 className="text-3xl font-bold text-foreground">
                 Recent Activity
               </h2>
               <Link
                 href="/dashboard/tasks"
-                className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
               >
                 View All
                 <IconArrowRight className="size-4" />
@@ -309,21 +309,19 @@ export default function DashboardPage() {
                   className="block"
                 >
                   <div
-                    className={`flex items-center gap-3 py-3 hover:bg-slate-100 -mx-2 px-2 rounded transition-colors ${
-                      index !== recentActivity.length - 1
-                        ? "border-b border-slate-200"
-                        : ""
+                    className={`flex items-center gap-3 py-3 hover:bg-muted -mx-2 px-2 rounded transition-colors ${
+                      index !== recentActivity.length - 1 ? "border-b" : ""
                     }`}
                   >
-                    <div className="flex-shrink-0 text-slate-400">
+                    <div className="flex-shrink-0 text-muted-foreground">
                       {getStatusIcon(task.status)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-900 truncate">
+                      <p className="text-sm text-foreground truncate">
                         {task.title}
                       </p>
                     </div>
-                    <span className="text-xs text-slate-500 flex-shrink-0">
+                    <span className="text-xs text-muted-foreground flex-shrink-0">
                       {formatDistanceToNow(new Date(task.updatedAt), {
                         addSuffix: true,
                       })}
