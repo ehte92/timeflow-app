@@ -1,7 +1,17 @@
 "use client";
 
-import { CheckCircle, Circle, Clock, Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
+import {
+  IconCalendar,
+  IconCircle,
+  IconCircleCheck,
+  IconCircleX,
+  IconClock,
+  IconEdit,
+  IconFlag,
+  IconHourglass,
+  IconTrash,
+} from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import { DeleteConfirmationDialog } from "@/components/tasks/delete-confirmation-dialog";
 import { TaskForm } from "@/components/tasks/task-form";
 import { Badge } from "@/components/ui/badge";
@@ -27,8 +37,11 @@ import {
 
 interface TaskDetailPanelProps {
   taskId: string | null;
+  createMode?: boolean;
+  editMode?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 const priorityColors: Record<TaskPriority, string> = {
@@ -42,10 +55,10 @@ const statusIcons: Record<
   TaskStatus,
   React.ComponentType<{ className?: string }>
 > = {
-  todo: Circle,
-  in_progress: Clock,
-  completed: CheckCircle,
-  cancelled: Circle,
+  todo: IconCircle,
+  in_progress: IconClock,
+  completed: IconCircleCheck,
+  cancelled: IconCircleX,
 };
 
 const statusColors: Record<TaskStatus, string> = {
@@ -59,13 +72,25 @@ type ViewMode = "view" | "edit";
 
 export function TaskDetailPanel({
   taskId,
+  createMode = false,
+  editMode = false,
   open,
   onOpenChange,
+  onSuccess,
 }: TaskDetailPanelProps) {
-  const [mode, setMode] = useState<ViewMode>("view");
+  const [mode, setMode] = useState<ViewMode>(editMode ? "edit" : "view");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const { data, isLoading, error, refetch } = useTask(taskId || "");
+  const { data, isLoading, error, refetch } = useTask(
+    createMode ? "" : taskId || "",
+  );
+
+  // Reset mode when editMode prop changes or panel opens
+  useEffect(() => {
+    if (open && !createMode) {
+      setMode(editMode ? "edit" : "view");
+    }
+  }, [editMode, open, createMode]);
   const { data: categoriesData } = useCategories();
   const toggleStatusMutation = useToggleTaskStatus();
   const deleteTaskMutation = useDeleteTask();
@@ -85,6 +110,11 @@ export function TaskDetailPanel({
   const handleEditSuccess = () => {
     setMode("view");
     refetch();
+  };
+
+  // Handle successful create
+  const handleCreateSuccess = () => {
+    onSuccess?.();
   };
 
   // Handle cancel edit
@@ -153,23 +183,42 @@ export function TaskDetailPanel({
     new Date(task.dueDate) < new Date() &&
     task.status !== "completed";
 
-  const StatusIcon = task ? statusIcons[task.status] : Circle;
+  const StatusIcon = task ? statusIcons[task.status] : IconCircle;
   const category = task ? getCategoryById(task.categoryId) : null;
 
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-          {isLoading && (
+          {createMode && (
+            <>
+              <SheetHeader>
+                <SheetTitle className="text-2xl font-bold">
+                  Create Task
+                </SheetTitle>
+                <SheetDescription className="sr-only">
+                  Create a new task
+                </SheetDescription>
+              </SheetHeader>
+              <div className="p-4">
+                <TaskForm
+                  onSuccess={handleCreateSuccess}
+                  onCancel={() => onOpenChange(false)}
+                />
+              </div>
+            </>
+          )}
+
+          {!createMode && isLoading && (
             <div className="flex items-center justify-center py-8">
               <div className="flex items-center space-x-2">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
-                <span className="text-gray-600">Loading task...</span>
+                <div className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                <span className="text-muted-foreground">Loading task...</span>
               </div>
             </div>
           )}
 
-          {error && (
+          {!createMode && error && (
             <div className="py-8">
               <div className="rounded-md bg-red-50 p-4">
                 <div className="text-sm text-red-800">
@@ -187,7 +236,7 @@ export function TaskDetailPanel({
             </div>
           )}
 
-          {task && mode === "view" && (
+          {!createMode && task && mode === "view" && (
             <>
               <SheetHeader>
                 <SheetTitle className="text-2xl font-bold pr-8">
@@ -198,127 +247,130 @@ export function TaskDetailPanel({
                 </SheetDescription>
               </SheetHeader>
 
-              <div className="mt-6 space-y-6">
+              <div className="mt-4 px-4 space-y-6">
+                {/* Status, Priority, Category Badges - Directly under title */}
+                <div className="flex flex-wrap gap-2">
+                  {/* Status Badge */}
+                  <Badge
+                    variant="secondary"
+                    className={`${statusColors[task.status]} flex items-center gap-1.5`}
+                  >
+                    <StatusIcon className="size-3" />
+                    <span className="capitalize">
+                      {task.status.replace("_", " ")}
+                    </span>
+                  </Badge>
+
+                  {/* Priority Badge */}
+                  <Badge
+                    variant="secondary"
+                    className={`${priorityColors[task.priority]} flex items-center gap-1.5`}
+                  >
+                    <IconFlag className="size-3" />
+                    <span className="capitalize">{task.priority}</span>
+                  </Badge>
+
+                  {/* Category Badge */}
+                  {category && (
+                    <Badge
+                      variant="outline"
+                      className="flex items-center gap-1.5"
+                    >
+                      <div
+                        className="size-3 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      {category.name}
+                    </Badge>
+                  )}
+                </div>
+
                 {/* Description */}
                 {task.description && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    <h3 className="text-sm font-medium text-foreground mb-2">
                       Description
                     </h3>
-                    <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                       {task.description}
                     </p>
                   </div>
                 )}
 
-                {/* Status, Priority, Category */}
+                {/* Timeline */}
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Details
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {/* Status Badge */}
-                    <Badge
-                      variant="secondary"
-                      className={`${statusColors[task.status]} flex items-center gap-1.5`}
-                    >
-                      <StatusIcon className="h-3 w-3" />
-                      <span className="capitalize">
-                        {task.status.replace("_", " ")}
-                      </span>
-                    </Badge>
-
-                    {/* Priority Badge */}
-                    <Badge
-                      variant="secondary"
-                      className={priorityColors[task.priority]}
-                    >
-                      {task.priority}
-                    </Badge>
-
-                    {/* Category Badge */}
-                    {category && (
-                      <Badge
-                        variant="outline"
-                        className="flex items-center gap-1.5"
-                      >
-                        <div
-                          className="h-2 w-2 rounded-full"
-                          style={{ backgroundColor: category.color }}
-                        />
-                        {category.name}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                {/* Dates */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+                    <IconCalendar className="size-4" />
                     Timeline
                   </h3>
-                  <div className="space-y-1 text-sm">
+                  <div className="space-y-2 text-sm">
                     {task.dueDate && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Due:</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Due date:</span>
                         <span
-                          className={`font-medium ${
-                            isOverdue ? "text-red-600" : "text-gray-900"
+                          className={`font-semibold ${
+                            isOverdue ? "text-destructive" : "text-foreground"
                           }`}
                         >
                           {formatDateTime(task.dueDate)}
+                          {isOverdue && (
+                            <span className="ml-2 text-xs font-normal text-destructive">
+                              (Overdue)
+                            </span>
+                          )}
                         </span>
                       </div>
                     )}
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Created:</span>
-                      <span className="text-gray-900">
-                        {formatDate(task.createdAt)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Updated:</span>
-                      <span className="text-gray-900">
-                        {formatDate(task.updatedAt)}
-                      </span>
-                    </div>
                     {task.completedAt && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Completed:</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">
+                          Completed:
+                        </span>
                         <span className="text-green-600 font-medium">
                           {formatDateTime(task.completedAt)}
                         </span>
                       </div>
                     )}
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted-foreground">
+                        Created {formatDate(task.createdAt)}
+                      </span>
+                      <span className="text-muted-foreground">
+                        Updated {formatDate(task.updatedAt)}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Time Tracking */}
                 {(task.estimatedMinutes || task.actualMinutes) && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                      <IconHourglass className="size-4" />
                       Time Tracking
                     </h3>
                     <div className="space-y-2">
                       {task.estimatedMinutes && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Estimated:</span>
-                          <span className="font-medium text-gray-900">
+                          <span className="text-muted-foreground">
+                            Estimated:
+                          </span>
+                          <span className="font-medium text-foreground">
                             {formatMinutesToTime(task.estimatedMinutes)}
                           </span>
                         </div>
                       )}
                       {task.actualMinutes && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Actual:</span>
-                          <span className="font-medium text-gray-900">
+                          <span className="text-muted-foreground">Actual:</span>
+                          <span className="font-medium text-foreground">
                             {formatMinutesToTime(task.actualMinutes)}
                           </span>
                         </div>
                       )}
                       {task.estimatedMinutes && task.actualMinutes && (
                         <div className="mt-3">
-                          <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <div className="flex justify-between text-xs text-muted-foreground mb-1">
                             <span>Progress</span>
                             <span>
                               {calculateTimeProgress(
@@ -328,9 +380,9 @@ export function TaskDetailPanel({
                               %
                             </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-muted rounded-full h-2">
                             <div
-                              className="bg-blue-600 h-2 rounded-full transition-all"
+                              className="bg-primary h-2 rounded-full transition-all"
                               style={{
                                 width: `${calculateTimeProgress(task.estimatedMinutes, task.actualMinutes)}%`,
                               }}
@@ -343,31 +395,35 @@ export function TaskDetailPanel({
                 )}
 
                 {/* Actions */}
-                <div className="flex flex-col gap-2 pt-4 border-t">
-                  <Button
-                    onClick={() => setMode("edit")}
-                    variant="default"
-                    className="w-full"
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Task
-                  </Button>
-                  <Button
-                    onClick={handleToggleStatus}
-                    variant="outline"
-                    className="w-full"
-                    disabled={toggleStatusMutation.isPending}
-                  >
-                    {task.status === "completed"
-                      ? "Mark as Incomplete"
-                      : "Mark as Complete"}
-                  </Button>
+                <div className="pt-4 border-t space-y-2">
+                  {/* Primary Actions Row */}
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      onClick={() => setMode("edit")}
+                      variant="default"
+                      className="flex-1"
+                    >
+                      <IconEdit className="size-4 mr-2" />
+                      Edit Task
+                    </Button>
+                    <Button
+                      onClick={handleToggleStatus}
+                      variant="outline"
+                      className="flex-1"
+                      disabled={toggleStatusMutation.isPending}
+                    >
+                      {task.status === "completed"
+                        ? "Mark as Incomplete"
+                        : "Mark as Complete"}
+                    </Button>
+                  </div>
+                  {/* Delete Action */}
                   <Button
                     onClick={() => setDeleteDialogOpen(true)}
-                    variant="outline"
-                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                    variant="ghost"
+                    className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <IconTrash className="size-4 mr-2" />
                     Delete Task
                   </Button>
                 </div>
@@ -375,8 +431,8 @@ export function TaskDetailPanel({
             </>
           )}
 
-          {task && mode === "edit" && (
-            <div className="py-4">
+          {!createMode && task && mode === "edit" && (
+            <div className="p-4">
               <TaskForm
                 task={task}
                 onSuccess={handleEditSuccess}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { IconTrash } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,8 +41,8 @@ export function DeleteConfirmationDialog({
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-red-600">
-            <Trash2 className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-destructive">
+            <IconTrash className="size-5" />
             {title}
           </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -61,7 +61,6 @@ export function DeleteConfirmationDialog({
             variant="destructive"
             onClick={handleConfirm}
             disabled={isLoading}
-            className="bg-red-600 hover:bg-red-700"
           >
             {isLoading ? "Deleting..." : "Delete"}
           </Button>

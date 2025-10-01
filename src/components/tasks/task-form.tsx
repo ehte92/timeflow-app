@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
+import { IconPlus } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -116,18 +116,7 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">
-          {isEditing ? "Edit Task" : "Create New Task"}
-        </h2>
-        <p className="text-sm text-gray-600">
-          {isEditing
-            ? "Update the task details below."
-            : "Fill in the details to create a new task."}
-        </p>
-      </div>
-
+    <div className="space-y-4">
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {(createTaskMutation.error || updateTaskMutation.error) && (
           <div className="rounded-md bg-red-50 p-4">
@@ -161,10 +150,10 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
 
         {/* Description Field */}
         <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description">Description (optional)</Label>
           <Textarea
             id="description"
-            placeholder="Enter task description (optional)"
+            placeholder="Enter task description"
             rows={4}
             {...form.register("description")}
             disabled={
@@ -196,10 +185,42 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
               <SelectValue placeholder="Select priority" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="low">Low</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="urgent">Urgent</SelectItem>
+              <SelectItem value="low">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="size-3 rounded-full"
+                    style={{ backgroundColor: "#22c55e" }}
+                  />
+                  Low
+                </div>
+              </SelectItem>
+              <SelectItem value="medium">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="size-3 rounded-full"
+                    style={{ backgroundColor: "#eab308" }}
+                  />
+                  Medium
+                </div>
+              </SelectItem>
+              <SelectItem value="high">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="size-3 rounded-full"
+                    style={{ backgroundColor: "#f97316" }}
+                  />
+                  High
+                </div>
+              </SelectItem>
+              <SelectItem value="urgent">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="size-3 rounded-full"
+                    style={{ backgroundColor: "#ef4444" }}
+                  />
+                  Urgent
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
           {form.formState.errors.priority && (
@@ -211,7 +232,7 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
 
         {/* Category Field */}
         <div className="space-y-2">
-          <Label htmlFor="category">Category</Label>
+          <Label htmlFor="category">Category (optional)</Label>
           <Select
             value={form.watch("categoryId") || "none"}
             onValueChange={(value) =>
@@ -244,7 +265,7 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
                 <SelectItem key={category.id} value={category.id}>
                   <div className="flex items-center gap-2">
                     <div
-                      className="h-3 w-3 rounded-sm"
+                      className="size-3 rounded-full"
                       style={{ backgroundColor: category.color }}
                     />
                     {category.name}
@@ -265,7 +286,7 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
                   setCategoryDialogOpen(true);
                 }}
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <IconPlus className="mr-2 size-4" />
                 <span>Create New Category</span>
               </button>
             </SelectContent>
@@ -279,7 +300,7 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
 
         {/* Due Date Field */}
         <div className="space-y-2">
-          <Label htmlFor="dueDate">Due Date</Label>
+          <Label htmlFor="dueDate">Due Date (optional)</Label>
           <Input
             id="dueDate"
             type="datetime-local"
@@ -296,7 +317,7 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end space-x-3 pt-6">
+        <div className="flex justify-end space-x-2 pt-4">
           {onCancel && (
             <Button
               type="button"

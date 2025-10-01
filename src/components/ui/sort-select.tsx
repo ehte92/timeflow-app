@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownAZ, ArrowUpAZ } from "lucide-react";
+import { IconSortAscending, IconSortDescending } from "@tabler/icons-react";
 import {
   Select,
   SelectContent,
@@ -101,26 +101,24 @@ export function SortSelect({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Select value={currentValue} onValueChange={handleValueChange}>
-        <SelectTrigger className="w-[200px]">
-          <div className="flex items-center gap-2">
-            {sortOrder === "asc" ? (
-              <ArrowUpAZ className="h-4 w-4" />
-            ) : (
-              <ArrowDownAZ className="h-4 w-4" />
-            )}
-            <SelectValue placeholder="Sort by..." />
-          </div>
-        </SelectTrigger>
-        <SelectContent>
-          {sortOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select value={currentValue} onValueChange={handleValueChange}>
+      <SelectTrigger className="w-full sm:w-[180px] h-8">
+        <div className="flex items-center gap-2">
+          {sortOrder === "asc" ? (
+            <IconSortAscending className="h-4 w-4" />
+          ) : (
+            <IconSortDescending className="h-4 w-4" />
+          )}
+          <SelectValue placeholder="Sort by..." />
+        </div>
+      </SelectTrigger>
+      <SelectContent>
+        {sortOptions.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
