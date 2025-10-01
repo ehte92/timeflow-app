@@ -172,8 +172,8 @@ export function TasksPageContent() {
     () => [
       { value: "all", label: "All Dates" },
       { value: "today", label: "Today" },
-      { value: "week", label: "This Week" },
-      { value: "month", label: "This Month" },
+      { value: "this_week", label: "This Week" },
+      { value: "this_month", label: "This Month" },
       { value: "overdue", label: "Overdue" },
     ],
     [],
