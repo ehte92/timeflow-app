@@ -1,7 +1,17 @@
+import {
+  IconCalendar,
+  IconChartBar,
+  IconCircleCheck,
+  IconClock,
+  IconFileText,
+  IconFolder,
+  IconPlus,
+  IconTarget,
+} from "@tabler/icons-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { auth } from "@/lib/auth/auth-simple";
 
 export default async function DashboardPage() {
@@ -12,32 +22,42 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+    <div className="flex flex-1 flex-col gap-4 p-4">
+      {/* Mobile-only header */}
+      <header className="flex lg:hidden h-16 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarTrigger className="-ml-1" />
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold">Dashboard</h1>
+        </div>
+      </header>
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Welcome Section */}
         <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
             Welcome back, {session.user.name}!
           </h1>
-          <p className="text-gray-600">
+          <p className="text-slate-600">
             Ready to boost your productivity? Let's get started.
           </p>
         </div>
 
         {/* Quick Actions */}
         <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <h2 className="text-xl font-semibold text-slate-900 mb-4">
             Quick Actions
           </h2>
           <div className="flex flex-wrap gap-3">
             <Link href="/dashboard/tasks?new=true">
-              <Button className="flex items-center gap-2">➕ New Task</Button>
+              <Button className="flex items-center gap-2">
+                <IconPlus className="size-4" />
+                New Task
+              </Button>
             </Link>
             <Link href="/dashboard/tasks">
               <Button variant="outline" className="flex items-center gap-2">
-                📝 View All Tasks
+                <IconFileText className="size-4" />
+                View All Tasks
               </Button>
             </Link>
           </div>
@@ -51,16 +71,16 @@ export default async function DashboardPage() {
           >
             <div className="bg-white shadow rounded-lg p-6 h-full">
               <div className="flex items-center mb-3">
-                <div className="text-3xl mr-3">📝</div>
-                <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600">
+                <IconFileText className="size-8 mr-3 text-emerald-600" />
+                <h3 className="text-lg font-medium text-slate-900 group-hover:text-emerald-600">
                   Task Management
                 </h3>
               </div>
-              <p className="text-gray-600 text-sm">
+              <p className="text-slate-600 text-sm">
                 Create, organize, and track your tasks with our powerful task
                 manager.
               </p>
-              <div className="mt-4 text-sm text-blue-600 group-hover:text-blue-700">
+              <div className="mt-4 text-sm text-emerald-600 group-hover:text-emerald-700">
                 Get started →
               </div>
             </div>
@@ -68,114 +88,104 @@ export default async function DashboardPage() {
 
           <div className="bg-white shadow rounded-lg p-6 h-full opacity-60">
             <div className="flex items-center mb-3">
-              <div className="text-3xl mr-3">📁</div>
-              <h3 className="text-lg font-medium text-gray-500">Categories</h3>
+              <IconFolder className="size-8 mr-3 text-slate-400" />
+              <h3 className="text-lg font-medium text-slate-500">Categories</h3>
             </div>
-            <p className="text-gray-500 text-sm">
+            <p className="text-slate-500 text-sm">
               Organize your tasks with custom categories and tags.
             </p>
-            <div className="mt-4 text-sm text-gray-400">Coming Soon</div>
+            <div className="mt-4 text-sm text-slate-400">Coming Soon</div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6 h-full opacity-60">
             <div className="flex items-center mb-3">
-              <div className="text-3xl mr-3">📅</div>
-              <h3 className="text-lg font-medium text-gray-500">
+              <IconCalendar className="size-8 mr-3 text-slate-400" />
+              <h3 className="text-lg font-medium text-slate-500">
                 Calendar View
               </h3>
             </div>
-            <p className="text-gray-500 text-sm">
+            <p className="text-slate-500 text-sm">
               Visualize your tasks and deadlines in a calendar format.
             </p>
-            <div className="mt-4 text-sm text-gray-400">Coming Soon</div>
+            <div className="mt-4 text-sm text-slate-400">Coming Soon</div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6 h-full opacity-60">
             <div className="flex items-center mb-3">
-              <div className="text-3xl mr-3">📊</div>
-              <h3 className="text-lg font-medium text-gray-500">Analytics</h3>
+              <IconChartBar className="size-8 mr-3 text-slate-400" />
+              <h3 className="text-lg font-medium text-slate-500">Analytics</h3>
             </div>
-            <p className="text-gray-500 text-sm">
+            <p className="text-slate-500 text-sm">
               Track your productivity with insightful analytics and reports.
             </p>
-            <div className="mt-4 text-sm text-gray-400">Coming Soon</div>
+            <div className="mt-4 text-sm text-slate-400">Coming Soon</div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6 h-full opacity-60">
             <div className="flex items-center mb-3">
-              <div className="text-3xl mr-3">⏰</div>
-              <h3 className="text-lg font-medium text-gray-500">
+              <IconClock className="size-8 mr-3 text-slate-400" />
+              <h3 className="text-lg font-medium text-slate-500">
                 Time Tracking
               </h3>
             </div>
-            <p className="text-gray-500 text-sm">
+            <p className="text-slate-500 text-sm">
               Monitor time spent on tasks and improve your efficiency.
             </p>
-            <div className="mt-4 text-sm text-gray-400">Coming Soon</div>
+            <div className="mt-4 text-sm text-slate-400">Coming Soon</div>
           </div>
 
           <div className="bg-white shadow rounded-lg p-6 h-full opacity-60">
             <div className="flex items-center mb-3">
-              <div className="text-3xl mr-3">🎯</div>
-              <h3 className="text-lg font-medium text-gray-500">
+              <IconTarget className="size-8 mr-3 text-slate-400" />
+              <h3 className="text-lg font-medium text-slate-500">
                 Goals & Habits
               </h3>
             </div>
-            <p className="text-gray-500 text-sm">
+            <p className="text-slate-500 text-sm">
               Set and track long-term goals and build productive habits.
             </p>
-            <div className="mt-4 text-sm text-gray-400">Coming Soon</div>
+            <div className="mt-4 text-sm text-slate-400">Coming Soon</div>
           </div>
         </div>
 
         {/* Account Info */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">
             Account Information
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <dl className="space-y-2">
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Name</dt>
-                  <dd className="text-sm text-gray-900">{session.user.name}</dd>
+                  <dt className="text-sm font-medium text-slate-500">Name</dt>
+                  <dd className="text-sm text-slate-900">
+                    {session.user.name}
+                  </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Email</dt>
-                  <dd className="text-sm text-gray-900">
+                  <dt className="text-sm font-medium text-slate-500">Email</dt>
+                  <dd className="text-sm text-slate-900">
                     {session.user.email}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">User ID</dt>
-                  <dd className="text-sm text-gray-900 font-mono">
+                  <dt className="text-sm font-medium text-slate-500">
+                    User ID
+                  </dt>
+                  <dd className="text-sm text-slate-900 font-mono">
                     {session.user.id}
                   </dd>
                 </div>
               </dl>
             </div>
-            <div className="bg-green-50 p-4 rounded-md">
+            <div className="bg-emerald-50 p-4 rounded-md">
               <div className="flex items-center">
-                <div className="text-green-400 mr-3">
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    role="img"
-                    aria-label="Success checkmark"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
+                <IconCircleCheck className="size-5 text-emerald-600 mr-3" />
                 <div>
-                  <p className="text-sm font-medium text-green-800">
+                  <p className="text-sm font-medium text-emerald-800">
                     Account Active
                   </p>
-                  <p className="text-xs text-green-600">
+                  <p className="text-xs text-emerald-600">
                     Authentication & security verified
                   </p>
                 </div>

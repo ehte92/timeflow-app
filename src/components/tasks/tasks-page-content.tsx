@@ -3,12 +3,12 @@
 import { Filter, Plus, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Header } from "@/components/layout/header";
 import { TaskForm } from "@/components/tasks/task-form";
 import { TaskList } from "@/components/tasks/task-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SortSelect } from "@/components/ui/sort-select";
 import type { Task, TaskPriority, TaskStatus } from "@/lib/db/schema/tasks";
 import { useCategories } from "@/lib/query/hooks/categories";
@@ -116,45 +116,62 @@ export function TasksPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
-              <p className="text-gray-600 mt-1">
-                Manage your tasks and stay organized
-              </p>
-            </div>
-
-            <Button
-              onClick={() => {
-                if (showForm) {
-                  handleCancelEdit();
-                } else {
-                  setEditingTask(null);
-                  setShowForm(true);
-                }
-              }}
-              className="flex items-center gap-2"
-            >
-              {showForm ? (
-                <>
-                  <X className="h-4 w-4" />
-                  Cancel
-                </>
-              ) : (
-                <>
-                  <Plus className="h-4 w-4" />
-                  Add Task
-                </>
-              )}
-            </Button>
-          </div>
+    <div className="flex flex-1 flex-col gap-4 p-4">
+      {/* Mobile-only header */}
+      <header className="flex lg:hidden h-16 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarTrigger className="-ml-1" />
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold">Tasks</h1>
         </div>
+        <Button
+          onClick={() => {
+            if (showForm) {
+              handleCancelEdit();
+            } else {
+              setEditingTask(null);
+              setShowForm(true);
+            }
+          }}
+          size="sm"
+        >
+          {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+        </Button>
+      </header>
 
+      {/* Desktop header section */}
+      <div className="hidden lg:flex items-center justify-between px-4 pt-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Tasks</h1>
+          <p className="text-slate-600">
+            Manage your tasks and stay organized
+          </p>
+        </div>
+        <Button
+          onClick={() => {
+            if (showForm) {
+              handleCancelEdit();
+            } else {
+              setEditingTask(null);
+              setShowForm(true);
+            }
+          }}
+          className="flex items-center gap-2"
+        >
+          {showForm ? (
+            <>
+              <X className="h-4 w-4" />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4" />
+              Add Task
+            </>
+          )}
+        </Button>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Task Form */}
           {showForm && (

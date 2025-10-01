@@ -1,14 +1,11 @@
-import { Header } from "@/components/layout/header";
 import { auth } from "@/lib/auth/auth-simple";
 
 export default async function TestAuthPage() {
   const session = await auth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
-      <main className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50">
+      <main className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="bg-white shadow rounded-lg p-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">
             Authentication Test Page

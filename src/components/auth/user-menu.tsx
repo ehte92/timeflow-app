@@ -1,15 +1,40 @@
 "use client";
 
+import {
+  IconChevronUp,
+  IconLogout,
+  IconSettings,
+  IconUser,
+} from "@tabler/icons-react";
 import { signOut, useSession } from "next-auth/react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+
+function getInitials(name: string | null | undefined): string {
+  if (!name) return "U";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 export function UserMenu() {
   const { data: session, status } = useSession();
-  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
-    setIsSigningOut(true);
     try {
       await signOut({
         callbackUrl: "/",
@@ -17,12 +42,17 @@ export function UserMenu() {
       });
     } catch (error) {
       console.error("Sign out error:", error);
-      setIsSigningOut(false);
     }
   };
 
   if (status === "loading") {
-    return <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />;
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <div className="h-12 w-full bg-muted rounded animate-pulse" />
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
   }
 
   if (!session?.user) {
@@ -30,19 +60,52 @@ export function UserMenu() {
   }
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="text-sm text-gray-700">
-        <span className="font-medium">{session.user.name}</span>
-        <div className="text-xs text-gray-500">{session.user.email}</div>
-      </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleSignOut}
-        disabled={isSigningOut}
-      >
-        {isSigningOut ? "Signing out..." : "Sign Out"}
-      </Button>
-    </div>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <Avatar className="h-8 w-8 rounded-lg">
+                <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
+                  {getInitials(session.user.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">
+                  {session.user.name}
+                </span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {session.user.email}
+                </span>
+              </div>
+              <IconChevronUp className="ml-auto size-4" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            side="top"
+            align="end"
+            sideOffset={4}
+          >
+            <DropdownMenuItem>
+              <IconUser className="mr-2 size-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <IconSettings className="mr-2 size-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut}>
+              <IconLogout className="mr-2 size-4" />
+              <span>Sign Out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }

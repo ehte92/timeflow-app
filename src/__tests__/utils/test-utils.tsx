@@ -3,6 +3,7 @@ import { type RenderOptions, render } from "@testing-library/react";
 import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import type { ReactElement, ReactNode } from "react";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Task } from "@/lib/db/schema/tasks";
 
 // Mock session data
@@ -44,9 +45,13 @@ function AllTheProviders({
   session = mockSession,
 }: AllTheProvidersProps) {
   return (
-    <SessionProvider session={session}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </SessionProvider>
+    <SidebarProvider>
+      <SessionProvider session={session}>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </SessionProvider>
+    </SidebarProvider>
   );
 }
 

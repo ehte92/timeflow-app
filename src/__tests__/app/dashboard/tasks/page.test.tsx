@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { TasksPageContent } from "@/components/tasks/tasks-page-content";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({
@@ -54,7 +55,9 @@ function renderWithProviders(ui: ReactElement) {
   });
 
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+    <SidebarProvider>
+      <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    </SidebarProvider>,
   );
 }
 
@@ -62,9 +65,8 @@ describe("Tasks Page Smoke Test", () => {
   it("should render basic page structure without crashing", async () => {
     renderWithProviders(<TasksPageContent />);
 
-    expect(
-      screen.getByRole("heading", { level: 1, name: /^tasks$/i }),
-    ).toBeInTheDocument();
+    // Both mobile and desktop headers exist (two "Tasks" headings)
+    expect(screen.getAllByRole("heading", { level: 1, name: /^tasks$/i })).toHaveLength(2);
     expect(
       screen.getByText(/manage your tasks and stay organized/i),
     ).toBeInTheDocument();
