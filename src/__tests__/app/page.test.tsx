@@ -5,61 +5,50 @@ describe("Home Page", () => {
   it("should render the main heading", () => {
     render(<Home />);
 
-    const heading = screen.getByRole("heading", { name: /⏰ TimeFlow/i });
+    const heading = screen.getByRole("heading", {
+      name: /Master Your Time, Amplify Your Impact/i,
+    });
     expect(heading).toBeInTheDocument();
   });
 
-  it("should render the subtitle", () => {
+  it("should render the brand tagline", () => {
     render(<Home />);
 
-    const subtitle = screen.getByText(
-      /Smart Task Planner with AI-powered time blocking and productivity insights/i,
+    const tagline = screen.getByText(
+      /Transform scattered tasks into focused achievement/i,
     );
-    expect(subtitle).toBeInTheDocument();
+    expect(tagline).toBeInTheDocument();
   });
 
-  it("should render setup complete section", () => {
+  it("should render social proof section", () => {
     render(<Home />);
 
-    const setupHeading = screen.getByRole("heading", {
-      name: /🎉 Fresh Setup Complete!/i,
-    });
-    expect(setupHeading).toBeInTheDocument();
-  });
-
-  it("should display all technology checkmarks", () => {
-    render(<Home />);
-
-    expect(screen.getByText("Next.js 15 with App Router")).toBeInTheDocument();
-    expect(screen.getByText("Tailwind CSS v4")).toBeInTheDocument();
-    expect(screen.getByText("shadcn/ui Components")).toBeInTheDocument();
-    expect(screen.getByText("Drizzle ORM")).toBeInTheDocument();
-    expect(screen.getByText("Supabase Database")).toBeInTheDocument();
-    expect(screen.getByText("TypeScript Configuration")).toBeInTheDocument();
-  });
-
-  it("should render action links", () => {
-    render(<Home />);
-
+    const socialProof = screen.getByText("1M+");
+    expect(socialProof).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /get started/i }),
+      screen.getByText(/Tasks Completed by 10,000\+ Professionals/i),
     ).toBeInTheDocument();
-
-    // Verify the Sign In link exists
-    const signInLink = screen.getByRole("link", { name: /sign in/i });
-    expect(signInLink).toBeInTheDocument();
-    expect(signInLink.getAttribute("data-slot")).toBe("button");
   });
 
-  it("should display progress bar at 100%", () => {
+  it("should display auth tabs", () => {
     render(<Home />);
 
-    const progressBarContainer = screen.getByText(
-      "Ready to start building...",
-    ).nextElementSibling;
-    const fullProgressBar = progressBarContainer?.querySelector(
-      '[style*="width: 100%"]',
-    );
-    expect(fullProgressBar).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /Sign In/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /Sign Up/i })).toBeInTheDocument();
+  });
+
+  it("should render welcome back heading on sign in tab", () => {
+    render(<Home />);
+
+    const welcomeHeading = screen.getByRole("heading", {
+      name: /Welcome back/i,
+    });
+    expect(welcomeHeading).toBeInTheDocument();
+  });
+
+  it("should display brand logo", () => {
+    render(<Home />);
+
+    expect(screen.getAllByText("TimeFlow").length).toBeGreaterThan(0);
   });
 });
