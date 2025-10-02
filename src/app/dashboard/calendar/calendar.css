@@ -1,0 +1,332 @@
+/* ===================================
+   SCHEDULE-X CALENDAR - CUSTOM STYLING
+   Modern, polished, shadcn theme integration
+   =================================== */
+
+/* Base Calendar Container */
+.sx__calendar-wrapper {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  animation: fadeIn 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Override Schedule-X theme colors with shadcn theme */
+:root {
+  --sx-color-primary: hsl(var(--primary));
+  --sx-color-on-primary: hsl(var(--primary-foreground));
+  --sx-color-on-surface: hsl(var(--foreground));
+  --sx-color-on-surface-variant: hsl(var(--muted-foreground));
+  --sx-color-surface-container: hsl(var(--background));
+  --sx-color-surface-container-low: hsl(var(--muted));
+  --sx-color-surface-container-high: hsl(var(--card));
+  --sx-color-outline: hsl(var(--border));
+}
+
+/* ===================================
+   HIDE DEFAULT TOOLBAR
+   =================================== */
+
+.sx__calendar-header,
+.sx__header-content {
+  display: none !important;
+}
+
+/* ===================================
+   CALENDAR GRID ENHANCEMENTS
+   =================================== */
+
+/* Month Grid Day Cells */
+.sx__month-grid-day {
+  border: 1px solid hsl(var(--border) / 0.08);
+  transition: background-color 200ms ease;
+  min-height: 120px;
+}
+
+.sx__month-grid-day:hover {
+  background-color: hsl(var(--accent) / 0.05);
+}
+
+/* Week Grid Day Cells */
+.sx__week-grid-day {
+  transition: background-color 200ms ease;
+}
+
+.sx__week-grid-day:hover {
+  background-color: hsl(var(--accent) / 0.05);
+}
+
+/* Time Grid Hour Cells */
+.sx__time-grid-hour {
+  border-top: 1px solid hsl(var(--border) / 0.1);
+  transition: background-color 200ms ease;
+  min-height: 60px;
+}
+
+.sx__time-grid-hour:hover {
+  background-color: hsl(var(--accent) / 0.03);
+}
+
+/* ===================================
+   TYPOGRAPHY ENHANCEMENTS
+   =================================== */
+
+/* Day Headers */
+.sx__week-grid-day-header,
+.sx__day-grid-day-header,
+.sx__month-grid-day-header {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem;
+  background: hsl(var(--muted) / 0.3);
+  color: hsl(var(--muted-foreground));
+}
+
+.sx__month-grid-day-header {
+  font-size: 0.875rem;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Time Labels */
+.sx__time-axis-hour-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.025em;
+}
+
+/* ===================================
+   CURRENT TIME INDICATOR
+   =================================== */
+
+.sx__current-time-indicator {
+  background: hsl(var(--primary));
+  height: 2px;
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.4);
+  z-index: 10;
+}
+
+.sx__current-time-indicator::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  background: hsl(var(--primary));
+  border-radius: 50%;
+  border: 2px solid hsl(var(--background));
+}
+
+/* ===================================
+   EVENTS STYLING
+   =================================== */
+
+.sx__event {
+  background-color: hsl(var(--primary) / 0.15);
+  border-left: 3px solid hsl(var(--primary));
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  transition: all 150ms ease-out;
+  cursor: pointer;
+}
+
+.sx__event:hover {
+  background-color: hsl(var(--primary) / 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px 0 hsl(var(--foreground) / 0.1);
+}
+
+.sx__event-title {
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+}
+
+/* Today indicator */
+.sx__is-today {
+  background-color: hsl(var(--primary) / 0.05);
+  position: relative;
+}
+
+.sx__is-today::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: hsl(var(--primary));
+}
+
+/* ===================================
+   FOCUS & ACCESSIBILITY
+   =================================== */
+
+.sx__event:focus-visible,
+button:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* ===================================
+   SKELETON LOADER - REFINED
+   =================================== */
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.calendar-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+  padding: 1.5rem;
+}
+
+.calendar-skeleton-header {
+  height: 60px;
+  background-color: hsl(var(--muted) / 0.3);
+  border-radius: 0.5rem;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.calendar-skeleton-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+}
+
+.calendar-skeleton-cell {
+  background-color: hsl(var(--muted) / 0.2);
+  border-radius: 0;
+  min-height: 100px;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border: 1px solid hsl(var(--border) / 0.1);
+}
+
+.calendar-skeleton-cell:nth-child(n) {
+  animation-delay: calc(var(--i) * 30ms);
+}
+
+/* ===================================
+   RESPONSIVE - MOBILE FIRST
+   =================================== */
+
+@media (max-width: 640px) {
+  .sx__month-grid-day {
+    min-height: 80px;
+  }
+
+  .sx__week-grid-day-header,
+  .sx__day-grid-day-header {
+    font-size: 0.625rem;
+    padding: 0.5rem;
+  }
+
+  .sx__time-axis-hour-text {
+    font-size: 0.625rem;
+  }
+
+  .sx__event {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .sx__event-title {
+    font-size: 0.75rem;
+  }
+}
+
+/* ===================================
+   REDUCED MOTION SUPPORT
+   =================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .sx__calendar-wrapper,
+  .sx__event,
+  .sx__month-grid-day,
+  .sx__week-grid-day,
+  .calendar-skeleton-header,
+  .calendar-skeleton-cell {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+}
+
+/* ===================================
+   DARK MODE REFINEMENTS
+   =================================== */
+
+.dark .sx__event {
+  background-color: hsl(var(--primary) / 0.2);
+}
+
+.dark .sx__event:hover {
+  background-color: hsl(var(--primary) / 0.3);
+  box-shadow: 0 4px 12px 0 hsl(var(--primary) / 0.2);
+}
+
+/* ===================================
+   FIX WEEK AND DAY VIEW SCROLLING
+   =================================== */
+
+/* Constrain the React calendar wrapper to fit its container */
+.sx-react-calendar-wrapper {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Constrain the calendar wrapper to prevent it from expanding beyond viewport */
+.sx__calendar-wrapper {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+}
+
+/* Make the calendar container a flex container with constrained height */
+.sx__calendar {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+}
+
+/* Enable scrolling on the view container */
+.sx__view-container {
+  overflow-y: auto !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+}
+
+/* Remove overflow hidden from Week and Day grids - let them grow naturally */
+.sx__week-grid,
+.sx__day-grid {
+  overflow: visible !important;
+}

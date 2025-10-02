@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  IconCalendarEvent,
   IconClock,
   IconLayoutDashboard,
   IconListCheck,
@@ -33,6 +34,11 @@ const menuItems = [
     title: "Tasks",
     url: "/dashboard/tasks",
     icon: IconListCheck,
+  },
+  {
+    title: "Calendar",
+    url: "/dashboard/calendar",
+    icon: IconCalendarEvent,
   },
 ];
 

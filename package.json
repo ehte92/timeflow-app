@@ -35,6 +35,11 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@schedule-x/calendar": "^3.2.0",
+    "@schedule-x/calendar-controls": "^3.2.0",
+    "@schedule-x/events-service": "^3.2.0",
+    "@schedule-x/react": "^3.2.0",
+    "@schedule-x/theme-default": "^3.2.0",
     "@tabler/icons-react": "^3.35.0",
     "@tanstack/react-query": "^5.90.2",
     "@tanstack/react-query-devtools": "^5.90.2",
@@ -54,6 +59,7 @@
     "react-dom": "19.1.0",
     "react-hook-form": "^7.63.0",
     "tailwind-merge": "^3.3.1",
+    "temporal-polyfill": "^0.3.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {
