@@ -1,3 +1,4 @@
+import { IconClock } from "@tabler/icons-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -12,7 +13,10 @@ export default function AuthErrorPage({ searchParams }: ErrorPageProps) {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">⏰ TimeFlow</h1>
+          <div className="flex items-center justify-center gap-2">
+            <IconClock className="size-8 text-emerald-600" />
+            <h1 className="text-3xl font-bold text-gray-900">TimeFlow</h1>
+          </div>
           <h2 className="mt-6 text-2xl font-semibold text-gray-900">
             Authentication Error
           </h2>

@@ -1,3 +1,10 @@
+import {
+  IconCircleCheck,
+  IconCircleX,
+  IconFlask,
+  IconSearch,
+  IconUser,
+} from "@tabler/icons-react";
 import { auth } from "@/lib/auth/auth-simple";
 
 export default async function TestAuthPage() {
@@ -13,18 +20,26 @@ export default async function TestAuthPage() {
 
           <div className="space-y-6">
             <div className="p-4 bg-blue-50 rounded-md">
-              <h3 className="text-lg font-medium text-blue-900 mb-2">
-                🔍 Authentication Status
-              </h3>
-              <p className="text-blue-700">
+              <div className="flex items-center gap-2 mb-2">
+                <IconSearch className="size-5 text-blue-900" />
+                <h3 className="text-lg font-medium text-blue-900">
+                  Authentication Status
+                </h3>
+              </div>
+              <p className="text-blue-700 flex items-center gap-2">
                 {session?.user ? (
                   <>
-                    ✅ <strong>Authenticated</strong> - User is signed in
+                    <IconCircleCheck className="size-5 text-green-600" />
+                    <span>
+                      <strong>Authenticated</strong> - User is signed in
+                    </span>
                   </>
                 ) : (
                   <>
-                    ❌ <strong>Not Authenticated</strong> - User is not signed
-                    in
+                    <IconCircleX className="size-5 text-red-600" />
+                    <span>
+                      <strong>Not Authenticated</strong> - User is not signed in
+                    </span>
                   </>
                 )}
               </p>
@@ -32,9 +47,12 @@ export default async function TestAuthPage() {
 
             {session?.user && (
               <div className="p-4 bg-green-50 rounded-md">
-                <h3 className="text-lg font-medium text-green-900 mb-2">
-                  👤 User Information
-                </h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <IconUser className="size-5 text-green-900" />
+                  <h3 className="text-lg font-medium text-green-900">
+                    User Information
+                  </h3>
+                </div>
                 <div className="text-green-700 space-y-1">
                   <p>
                     <strong>ID:</strong> {session.user.id}
@@ -50,9 +68,12 @@ export default async function TestAuthPage() {
             )}
 
             <div className="p-4 bg-amber-50 rounded-md">
-              <h3 className="text-lg font-medium text-amber-900 mb-2">
-                🧪 Test Cases
-              </h3>
+              <div className="flex items-center gap-2 mb-2">
+                <IconFlask className="size-5 text-amber-900" />
+                <h3 className="text-lg font-medium text-amber-900">
+                  Test Cases
+                </h3>
+              </div>
               <div className="text-amber-700 space-y-2">
                 <p>
                   • Try accessing{" "}
