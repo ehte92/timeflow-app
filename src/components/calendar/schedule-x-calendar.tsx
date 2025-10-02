@@ -42,7 +42,6 @@ export function ScheduleXCalendarComponent({
     <div className="h-full w-full flex flex-col">
       <CalendarToolbar
         calendarControls={calendarControls}
-        calendarApp={calendar}
         selectedDate={selectedDate}
       />
       <div className="flex-1 min-h-0 overflow-auto">

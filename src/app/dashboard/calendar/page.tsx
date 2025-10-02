@@ -30,7 +30,6 @@ export default function CalendarPage() {
             <div className="calendar-skeleton">
               <div className="calendar-skeleton-header" />
               <div className="calendar-skeleton-grid">
-                {/* biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton cells that never reorder */}
                 {Array.from({ length: 35 }, (_, i) => (
                   <div
                     key={`skeleton-${i}`}

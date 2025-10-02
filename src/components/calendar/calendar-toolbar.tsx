@@ -1,6 +1,5 @@
 "use client";
 
-import type { CalendarApp } from "@schedule-x/calendar";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,13 +16,11 @@ interface CalendarToolbarProps {
     setView: (view: string) => void;
     setDate: (date: Temporal.PlainDate) => void;
   };
-  calendarApp: CalendarApp | null;
   selectedDate: string;
 }
 
 export function CalendarToolbar({
   calendarControls,
-  calendarApp,
   selectedDate,
 }: CalendarToolbarProps) {
   const [currentView, setCurrentView] = useState("month-grid");
