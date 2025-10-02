@@ -30,9 +30,10 @@ export default function CalendarPage() {
             <div className="calendar-skeleton">
               <div className="calendar-skeleton-header" />
               <div className="calendar-skeleton-grid">
-                {Array.from({ length: 35 }).map((_, i) => (
+                {/* biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton cells that never reorder */}
+                {Array.from({ length: 35 }, (_, i) => (
                   <div
-                    key={i}
+                    key={`skeleton-${i}`}
                     className="calendar-skeleton-cell"
                     style={{ "--i": i } as React.CSSProperties}
                   />
