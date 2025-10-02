@@ -55,4 +55,12 @@ export const queryKeys = {
     all: () => ["categories"] as const,
     lists: () => ["categories", "list"] as const,
   },
+  timeBlocks: {
+    all: () => ["timeBlocks"] as const,
+    lists: () => ["timeBlocks", "list"] as const,
+    list: (filters?: Record<string, unknown>) =>
+      ["timeBlocks", "list", filters] as const,
+    details: () => ["timeBlocks", "detail"] as const,
+    detail: (id: string) => ["timeBlocks", "detail", id] as const,
+  },
 } as const;
