@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import { useEffect, useState } from "react";
 import { ScheduleXCalendarComponent } from "@/components/calendar/schedule-x-calendar";
+import { PageHeader } from "@/components/ui/page-header";
 import "./calendar.css";
 
 export default function CalendarPage() {

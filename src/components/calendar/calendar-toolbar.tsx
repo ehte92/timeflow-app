@@ -1,6 +1,8 @@
 "use client";
 
+import type { CalendarApp } from "@schedule-x/calendar";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -9,8 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { CalendarApp } from "@schedule-x/calendar";
-import { useCallback, useState, useEffect, useRef } from "react";
 
 interface CalendarToolbarProps {
   calendarControls: {
@@ -40,24 +40,27 @@ export function CalendarToolbar({
   }, []);
 
   // Helper to execute navigation with debouncing
-  const debouncedNavigate = useCallback((newDate: Temporal.PlainDate) => {
-    // Clear any pending navigation
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
+  const debouncedNavigate = useCallback(
+    (newDate: Temporal.PlainDate) => {
+      // Clear any pending navigation
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
 
-    setIsNavigating(true);
+      setIsNavigating(true);
 
-    // Debounce the actual navigation call
-    debounceTimerRef.current = setTimeout(() => {
-      calendarControls.setDate(newDate);
+      // Debounce the actual navigation call
+      debounceTimerRef.current = setTimeout(() => {
+        calendarControls.setDate(newDate);
 
-      // Reset navigation state after a short delay to allow UI to update
-      setTimeout(() => {
-        setIsNavigating(false);
-      }, 150);
-    }, 200);
-  }, [calendarControls]);
+        // Reset navigation state after a short delay to allow UI to update
+        setTimeout(() => {
+          setIsNavigating(false);
+        }, 150);
+      }, 200);
+    },
+    [calendarControls],
+  );
 
   const handleToday = useCallback(() => {
     const today = Temporal.Now.plainDateISO();
@@ -113,7 +116,7 @@ export function CalendarToolbar({
       setCurrentView(view);
       calendarControls.setView(view);
     },
-    [calendarControls]
+    [calendarControls],
   );
 
   const formatDisplayDate = useCallback(() => {

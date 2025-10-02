@@ -1,16 +1,16 @@
 "use client";
 
-import { useNextCalendarApp, ScheduleXCalendar } from "@schedule-x/react";
 import {
   createViewDay,
-  createViewWeek,
   createViewMonthGrid,
+  createViewWeek,
 } from "@schedule-x/calendar";
-import { createEventsServicePlugin } from "@schedule-x/events-service";
 import { createCalendarControlsPlugin } from "@schedule-x/calendar-controls";
+import { createEventsServicePlugin } from "@schedule-x/events-service";
+import { ScheduleXCalendar, useNextCalendarApp } from "@schedule-x/react";
 import "temporal-polyfill/global";
 import "@schedule-x/theme-default/dist/index.css";
-import { useMemo, useState, useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { CalendarToolbar } from "./calendar-toolbar";
 
 interface ScheduleXCalendarProps {
@@ -29,11 +29,7 @@ export function ScheduleXCalendarComponent({
   }, []);
 
   const calendar = useNextCalendarApp({
-    views: [
-      createViewMonthGrid(),
-      createViewWeek(),
-      createViewDay(),
-    ],
+    views: [createViewMonthGrid(), createViewWeek(), createViewDay()],
     events: events,
     plugins: [eventsService, calendarControls],
     defaultView: "month-grid",
