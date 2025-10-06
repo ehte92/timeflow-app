@@ -1,6 +1,10 @@
 "use client";
 
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconPlus,
+} from "@tabler/icons-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,11 +21,13 @@ interface CalendarToolbarProps {
     setDate: (date: Temporal.PlainDate) => void;
   };
   selectedDate: string;
+  onCreateTimeBlock?: () => void;
 }
 
 export function CalendarToolbar({
   calendarControls,
   selectedDate,
+  onCreateTimeBlock,
 }: CalendarToolbarProps) {
   const [currentView, setCurrentView] = useState("month-grid");
   const [isNavigating, setIsNavigating] = useState(false);
@@ -147,8 +153,18 @@ export function CalendarToolbar({
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 border-b border-border/50 bg-gradient-to-r from-background to-muted/20">
-      {/* Left: Navigation */}
+      {/* Left: Navigation & Actions */}
       <div className="flex items-center gap-2">
+        <Button
+          variant="default"
+          size="sm"
+          onClick={onCreateTimeBlock}
+          className="font-medium transition-all duration-200 hover:-translate-y-0.5 active:scale-95 gap-1.5"
+        >
+          <IconPlus className="h-4 w-4" />
+          New Time Block
+        </Button>
+        <div className="h-6 w-px bg-border/50 mx-1" />
         <Button
           variant="outline"
           size="sm"

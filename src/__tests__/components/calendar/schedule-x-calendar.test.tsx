@@ -3,7 +3,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { ScheduleXCalendarComponent } from "@/components/calendar/schedule-x-calendar";
 import * as tasksHooks from "@/lib/query/hooks/tasks";
 import * as timeBlocksHooks from "@/lib/query/hooks/time-blocks";
@@ -69,6 +69,18 @@ jest.mock("@schedule-x/resize", () => ({
 
 jest.mock("@/components/calendar/calendar-toolbar", () => ({
   CalendarToolbar: () => <div data-testid="calendar-toolbar">Toolbar</div>,
+}));
+
+jest.mock("@/components/time-blocks/time-block-form-dialog", () => ({
+  TimeBlockFormDialog: ({ open, defaultStartTime, defaultEndTime }: any) => {
+    if (!open) return null;
+    return (
+      <div data-testid="time-block-dialog">
+        <div data-testid="dialog-start-time">{defaultStartTime}</div>
+        <div data-testid="dialog-end-time">{defaultEndTime}</div>
+      </div>
+    );
+  },
 }));
 
 describe("ScheduleXCalendarComponent", () => {
@@ -493,6 +505,122 @@ describe("ScheduleXCalendarComponent", () => {
       );
 
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe("Time Block Creation", () => {
+    beforeEach(() => {
+      (tasksHooks.useTasks as jest.Mock).mockReturnValue({
+        data: { tasks: [], count: 0 },
+        isLoading: false,
+      });
+
+      (tasksHooks.useUpdateTask as jest.Mock).mockReturnValue({
+        mutate: jest.fn(),
+      });
+
+      (timeBlocksHooks.useTimeBlocks as jest.Mock).mockReturnValue({
+        data: { timeBlocks: [], count: 0 },
+        isLoading: false,
+      });
+
+      (timeBlocksHooks.useUpdateTimeBlock as jest.Mock).mockReturnValue({
+        mutate: jest.fn(),
+      });
+    });
+
+    it("should open time block dialog on double-click date (month view)", async () => {
+      renderComponent();
+
+      // Simulate double-click on a date in month view
+      const plainDate = {
+        year: 2025,
+        month: 10,
+        day: 7,
+      };
+
+      lastCalendarConfig.callbacks.onDoubleClickDate(plainDate);
+
+      // Dialog should be visible
+      await waitFor(() => {
+        expect(screen.getByTestId("time-block-dialog")).toBeInTheDocument();
+      });
+
+      // Should pre-fill with 9 AM - 10 AM on clicked date (check for date portion only due to timezone)
+      expect(screen.getByTestId("dialog-start-time").textContent).toContain(
+        "2025-10-07",
+      );
+      expect(screen.getByTestId("dialog-end-time").textContent).toContain(
+        "2025-10-07",
+      );
+    });
+
+    it("should open time block dialog on double-click date-time (week/day view)", async () => {
+      renderComponent();
+
+      // Simulate double-click on a time slot in week/day view
+      const clickedTime = new Date("2025-10-07T14:30:00.000Z");
+      const zonedDateTime = {
+        epochMilliseconds: clickedTime.getTime(),
+      };
+
+      lastCalendarConfig.callbacks.onDoubleClickDateTime(zonedDateTime);
+
+      // Dialog should be visible
+      await waitFor(() => {
+        expect(screen.getByTestId("time-block-dialog")).toBeInTheDocument();
+      });
+
+      // Should pre-fill with clicked time and 1 hour duration
+      const startTime = screen.getByTestId("dialog-start-time").textContent;
+      const endTime = screen.getByTestId("dialog-end-time").textContent;
+
+      expect(startTime).toBe("2025-10-07T14:30:00.000Z");
+      expect(endTime).toBe("2025-10-07T15:30:00.000Z");
+    });
+
+    it("should handle different hours when double-clicking date-time", async () => {
+      renderComponent();
+
+      // Click at 3:15 PM
+      const clickedTime = new Date("2025-10-07T15:15:00.000Z");
+      const zonedDateTime = {
+        epochMilliseconds: clickedTime.getTime(),
+      };
+
+      lastCalendarConfig.callbacks.onDoubleClickDateTime(zonedDateTime);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("time-block-dialog")).toBeInTheDocument();
+      });
+
+      const startTime = screen.getByTestId("dialog-start-time").textContent;
+      const endTime = screen.getByTestId("dialog-end-time").textContent;
+
+      expect(startTime).toBe("2025-10-07T15:15:00.000Z");
+      // End time should be 1 hour later
+      expect(endTime).toBe("2025-10-07T16:15:00.000Z");
+    });
+
+    it("should handle edge of day when calculating end time", async () => {
+      renderComponent();
+
+      // Click at 11:30 PM
+      const clickedTime = new Date("2025-10-07T23:30:00.000Z");
+      const zonedDateTime = {
+        epochMilliseconds: clickedTime.getTime(),
+      };
+
+      lastCalendarConfig.callbacks.onDoubleClickDateTime(zonedDateTime);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("time-block-dialog")).toBeInTheDocument();
+      });
+
+      const endTime = screen.getByTestId("dialog-end-time").textContent;
+
+      // End time should roll over to next day
+      expect(endTime).toBe("2025-10-08T00:30:00.000Z");
     });
   });
 });

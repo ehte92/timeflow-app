@@ -16,6 +16,23 @@ if (typeof window !== "undefined") {
       dispatchEvent: jest.fn(),
     })),
   });
+
+  // Polyfill for Radix UI's pointer capture (required for Select, Dialog, etc.)
+  // JSDOM doesn't implement these methods, causing test failures
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = jest.fn(() => false);
+  }
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = jest.fn();
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = jest.fn();
+  }
+
+  // Polyfill for scrollIntoView (required for Radix UI Select)
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = jest.fn();
+  }
 }
 
 // Mock next/router if needed in tests

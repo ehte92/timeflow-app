@@ -13,12 +13,14 @@ import { createResizePlugin } from "@schedule-x/resize";
 import "temporal-polyfill/global";
 import "@schedule-x/theme-default/dist/index.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { TimeBlockFormDialog } from "@/components/time-blocks/time-block-form-dialog";
 import { CALENDAR_IDS, mergeCalendarEvents } from "@/lib/calendar/events";
 import { useTasks, useUpdateTask } from "@/lib/query/hooks/tasks";
 import {
   useTimeBlocks,
   useUpdateTimeBlock,
 } from "@/lib/query/hooks/time-blocks";
+import { CalendarHelpBanner } from "./calendar-help-banner";
 import { CalendarToolbar } from "./calendar-toolbar";
 
 export function ScheduleXCalendarComponent() {
@@ -27,6 +29,13 @@ export function ScheduleXCalendarComponent() {
   const dragAndDrop = useMemo(() => createDragAndDropPlugin(15), []); // 15-minute intervals
   const resize = useMemo(() => createResizePlugin(15), []); // 15-minute intervals
   const [selectedDate, setSelectedDate] = useState<string>("");
+  const [timeBlockDialogOpen, setTimeBlockDialogOpen] = useState(false);
+  const [defaultStartTime, setDefaultStartTime] = useState<string | undefined>(
+    undefined,
+  );
+  const [defaultEndTime, setDefaultEndTime] = useState<string | undefined>(
+    undefined,
+  );
 
   // Mutation hooks for updating tasks and time blocks
   const updateTask = useUpdateTask();
@@ -150,6 +159,47 @@ export function ScheduleXCalendarComponent() {
     [updateTask, updateTimeBlock],
   );
 
+  // Handle double-click on date (month view) to create time block
+  const handleDoubleClickDate = useCallback((date: Temporal.PlainDate) => {
+    // Set start time to 9 AM on clicked date
+    const startDate = new Date(date.year, date.month - 1, date.day, 9, 0, 0);
+    // Set end time to 10 AM (1 hour later)
+    const endDate = new Date(date.year, date.month - 1, date.day, 10, 0, 0);
+
+    setDefaultStartTime(startDate.toISOString());
+    setDefaultEndTime(endDate.toISOString());
+    setTimeBlockDialogOpen(true);
+  }, []);
+
+  // Handle double-click on date-time (week/day view) to create time block
+  const handleDoubleClickDateTime = useCallback(
+    (dateTime: Temporal.ZonedDateTime) => {
+      // Get the clicked time as start time
+      const startDate = new Date(dateTime.epochMilliseconds);
+      // Set end time to 1 hour later
+      const endDate = new Date(dateTime.epochMilliseconds + 60 * 60 * 1000);
+
+      setDefaultStartTime(startDate.toISOString());
+      setDefaultEndTime(endDate.toISOString());
+      setTimeBlockDialogOpen(true);
+    },
+    [],
+  );
+
+  // Handle manual time block creation from toolbar button
+  const handleCreateTimeBlock = useCallback(() => {
+    // Default to current time rounded to next hour
+    const now = new Date();
+    const nextHour = new Date(now);
+    nextHour.setHours(now.getHours() + 1, 0, 0, 0);
+    const hourAfter = new Date(nextHour);
+    hourAfter.setHours(nextHour.getHours() + 1);
+
+    setDefaultStartTime(nextHour.toISOString());
+    setDefaultEndTime(hourAfter.toISOString());
+    setTimeBlockDialogOpen(true);
+  }, []);
+
   const calendar = useNextCalendarApp({
     views: [createViewMonthGrid(), createViewWeek(), createViewDay()],
     // Don't set events here - use eventsService.set() instead for drag-and-drop to work
@@ -254,6 +304,8 @@ export function ScheduleXCalendarComponent() {
       onSelectedDateUpdate: handleSelectedDateUpdate,
       onEventClick: handleEventClick,
       onEventUpdate: handleEventUpdate,
+      onDoubleClickDate: handleDoubleClickDate,
+      onDoubleClickDateTime: handleDoubleClickDateTime,
     },
   });
 
@@ -279,10 +331,18 @@ export function ScheduleXCalendarComponent() {
       <CalendarToolbar
         calendarControls={calendarControls}
         selectedDate={selectedDate}
+        onCreateTimeBlock={handleCreateTimeBlock}
       />
+      <CalendarHelpBanner />
       <div className="flex-1 min-h-0 overflow-auto">
         <ScheduleXCalendar calendarApp={calendar} />
       </div>
+      <TimeBlockFormDialog
+        open={timeBlockDialogOpen}
+        onOpenChange={setTimeBlockDialogOpen}
+        defaultStartTime={defaultStartTime}
+        defaultEndTime={defaultEndTime}
+      />
     </div>
   );
 }
