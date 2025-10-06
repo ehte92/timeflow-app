@@ -339,27 +339,31 @@ describe("CategoryList", () => {
       expect(screen.getByText("Delete Category")).toBeInTheDocument();
     });
 
-    // Mock slow deletion
-    mockFetch(
-      new Promise((resolve) =>
-        setTimeout(
-          () => resolve({ message: "Category deleted successfully" }),
-          100,
-        ),
-      ),
-    );
+    // Mock slow deletion with longer delay to ensure we can catch the pending state
+    let resolveDelete: ((value: any) => void) | undefined;
+    const deletePromise = new Promise((resolve) => {
+      resolveDelete = resolve;
+    });
+    mockFetch(deletePromise);
 
     // Click confirm delete button
     const confirmButton = screen.getByRole("button", { name: /^delete$/i });
     await user.click(confirmButton);
 
     // Buttons should be disabled during mutation
-    await waitFor(
-      () => {
-        expect(confirmButton).toBeDisabled();
-        expect(screen.getByRole("button", { name: /cancel/i })).toBeDisabled();
-      },
-      { timeout: 200 },
-    );
+    await waitFor(() => {
+      expect(confirmButton).toBeDisabled();
+      expect(screen.getByRole("button", { name: /cancel/i })).toBeDisabled();
+    });
+
+    // Resolve the deletion
+    if (resolveDelete) {
+      resolveDelete({ message: "Category deleted successfully" });
+    }
+
+    // Wait for dialog to close
+    await waitFor(() => {
+      expect(screen.queryByText("Delete Category")).not.toBeInTheDocument();
+    });
   });
 });
