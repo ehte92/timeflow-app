@@ -353,10 +353,13 @@ describe("CategoryList", () => {
     const confirmButton = screen.getByRole("button", { name: /^delete$/i });
     await user.click(confirmButton);
 
-    // Buttons should be disabled
-    await waitFor(() => {
-      expect(confirmButton).toBeDisabled();
-      expect(screen.getByRole("button", { name: /cancel/i })).toBeDisabled();
-    });
+    // Buttons should be disabled during mutation
+    await waitFor(
+      () => {
+        expect(confirmButton).toBeDisabled();
+        expect(screen.getByRole("button", { name: /cancel/i })).toBeDisabled();
+      },
+      { timeout: 200 },
+    );
   });
 });
