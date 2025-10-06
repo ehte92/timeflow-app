@@ -6,20 +6,31 @@ import {
   createViewWeek,
 } from "@schedule-x/calendar";
 import { createCalendarControlsPlugin } from "@schedule-x/calendar-controls";
+import { createDragAndDropPlugin } from "@schedule-x/drag-and-drop";
 import { createEventsServicePlugin } from "@schedule-x/events-service";
 import { ScheduleXCalendar, useNextCalendarApp } from "@schedule-x/react";
+import { createResizePlugin } from "@schedule-x/resize";
 import "temporal-polyfill/global";
 import "@schedule-x/theme-default/dist/index.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CALENDAR_IDS, mergeCalendarEvents } from "@/lib/calendar/events";
-import { useTasks } from "@/lib/query/hooks/tasks";
-import { useTimeBlocks } from "@/lib/query/hooks/time-blocks";
+import { useTasks, useUpdateTask } from "@/lib/query/hooks/tasks";
+import {
+  useTimeBlocks,
+  useUpdateTimeBlock,
+} from "@/lib/query/hooks/time-blocks";
 import { CalendarToolbar } from "./calendar-toolbar";
 
 export function ScheduleXCalendarComponent() {
   const eventsService = useMemo(() => createEventsServicePlugin(), []);
   const calendarControls = useMemo(() => createCalendarControlsPlugin(), []);
+  const dragAndDrop = useMemo(() => createDragAndDropPlugin(15), []); // 15-minute intervals
+  const resize = useMemo(() => createResizePlugin(15), []); // 15-minute intervals
   const [selectedDate, setSelectedDate] = useState<string>("");
+
+  // Mutation hooks for updating tasks and time blocks
+  const updateTask = useUpdateTask();
+  const updateTimeBlock = useUpdateTimeBlock();
 
   // Calculate date range for fetching data (current month +/- 1 month for buffer)
   const dateRange = useMemo(() => {
@@ -63,10 +74,86 @@ export function ScheduleXCalendarComponent() {
     // TODO: Open event details modal/sidebar in future task
   }, []);
 
+  const handleEventUpdate = useCallback(
+    (updatedEvent: any) => {
+      console.log("Event updated:", updatedEvent);
+
+      // Parse event ID to determine entity type
+      const eventId = String(updatedEvent.id);
+      const isTask = eventId.startsWith("task-");
+      const isTimeBlock = eventId.startsWith("timeblock-");
+
+      if (!isTask && !isTimeBlock) {
+        console.error("Unknown event type:", eventId);
+        return;
+      }
+
+      // Extract entity ID
+      const entityId = isTask
+        ? eventId.replace("task-", "")
+        : eventId.replace("timeblock-", "");
+
+      // Convert event date/time to ISO strings
+      // Schedule-X returns objects with epochMilliseconds
+      const getISOString = (dateTime: any): string => {
+        if (dateTime.epochMilliseconds) {
+          return new Date(dateTime.epochMilliseconds).toISOString();
+        }
+        // Fallback for PlainDate (all-day events)
+        if (dateTime.year && dateTime.month && dateTime.day) {
+          return new Date(
+            dateTime.year,
+            dateTime.month - 1,
+            dateTime.day,
+          ).toISOString();
+        }
+        throw new Error("Invalid date/time format from calendar event");
+      };
+
+      const startTime = getISOString(updatedEvent.start);
+      const endTime = getISOString(updatedEvent.end);
+
+      // Update the appropriate entity
+      if (isTask) {
+        updateTask.mutate(
+          {
+            id: entityId,
+            data: {
+              dueDate: startTime,
+            },
+          },
+          {
+            onError: (error) => {
+              console.error("Failed to update task:", error);
+              // TODO: Add toast notification
+            },
+          },
+        );
+      } else {
+        updateTimeBlock.mutate(
+          {
+            id: entityId,
+            data: {
+              startTime,
+              endTime,
+            },
+          },
+          {
+            onError: (error) => {
+              console.error("Failed to update time block:", error);
+              // TODO: Add toast notification
+            },
+          },
+        );
+      }
+    },
+    [updateTask, updateTimeBlock],
+  );
+
   const calendar = useNextCalendarApp({
     views: [createViewMonthGrid(), createViewWeek(), createViewDay()],
-    events: calendarEvents,
-    plugins: [eventsService, calendarControls],
+    // Don't set events here - use eventsService.set() instead for drag-and-drop to work
+    plugins: [eventsService, calendarControls, dragAndDrop, resize],
     defaultView: "month-grid",
     calendars: {
       // Task priorities
@@ -166,6 +253,7 @@ export function ScheduleXCalendarComponent() {
     callbacks: {
       onSelectedDateUpdate: handleSelectedDateUpdate,
       onEventClick: handleEventClick,
+      onEventUpdate: handleEventUpdate,
     },
   });
 
