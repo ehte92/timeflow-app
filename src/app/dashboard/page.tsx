@@ -17,6 +17,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { ErrorDisplay } from "@/components/errors";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -66,10 +68,24 @@ export default function DashboardPage() {
   const [quickTaskTitle, setQuickTaskTitle] = useState("");
 
   // Data hooks
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: todaysTasks = [], isLoading: todaysLoading } = useTodaysTasks();
-  const { data: recentActivity = [], isLoading: activityLoading } =
-    useRecentActivity();
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useDashboardStats();
+  const {
+    data: todaysTasks = [],
+    isLoading: todaysLoading,
+    error: todaysError,
+    refetch: refetchTodaysTasks,
+  } = useTodaysTasks();
+  const {
+    data: recentActivity = [],
+    isLoading: activityLoading,
+    error: activityError,
+    refetch: refetchActivity,
+  } = useRecentActivity();
 
   const createTaskMutation = useCreateTask();
 
@@ -92,8 +108,13 @@ export default function DashboardPage() {
         dueDate: new Date().toISOString(),
       });
       setQuickTaskTitle("");
+      toast.success("Task created successfully");
     } catch (error) {
-      console.error("Failed to create quick task:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to create task. Please try again.",
+      );
     }
   };
 
@@ -143,6 +164,15 @@ export default function DashboardPage() {
               <StatCardSkeleton />
               <StatCardSkeleton />
             </>
+          ) : statsError ? (
+            <div className="col-span-full">
+              <ErrorDisplay
+                error={statsError}
+                message="Failed to load dashboard statistics"
+                onRetry={refetchStats}
+                compact
+              />
+            </div>
           ) : (
             <>
               <StatCard
@@ -201,6 +231,14 @@ export default function DashboardPage() {
 
           {todaysLoading ? (
             <TaskListSkeleton count={3} className="mb-6" />
+          ) : todaysError ? (
+            <ErrorDisplay
+              error={todaysError}
+              message="Failed to load today's tasks"
+              onRetry={refetchTodaysTasks}
+              compact
+              className="mb-6"
+            />
           ) : todaysTasks.length === 0 ? (
             <EmptyState
               icon={IconTarget}
@@ -294,6 +332,13 @@ export default function DashboardPage() {
 
           {activityLoading ? (
             <ActivityListSkeleton count={5} />
+          ) : activityError ? (
+            <ErrorDisplay
+              error={activityError}
+              message="Failed to load recent activity"
+              onRetry={refetchActivity}
+              compact
+            />
           ) : recentActivity.length === 0 ? (
             <EmptyState
               icon={IconClock}
