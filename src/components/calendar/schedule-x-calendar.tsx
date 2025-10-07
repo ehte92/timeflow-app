@@ -13,6 +13,7 @@ import { createResizePlugin } from "@schedule-x/resize";
 import "temporal-polyfill/global";
 import "@schedule-x/theme-default/dist/index.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ConflictPopover } from "@/components/calendar/conflict-popover";
 import { TimeBlockDetailPanel } from "@/components/time-blocks/time-block-detail-panel";
 import { TimeBlockFormSheet } from "@/components/time-blocks/time-block-form-sheet";
 import { CALENDAR_IDS, mergeCalendarEvents } from "@/lib/calendar/events";
@@ -41,6 +42,24 @@ export function ScheduleXCalendarComponent() {
     null,
   );
   const [timeBlockDetailOpen, setTimeBlockDetailOpen] = useState(false);
+
+  // Popover state for conflict messages
+  const [conflictPopover, setConflictPopover] = useState<{
+    isOpen: boolean;
+    anchorElement: HTMLElement | null;
+    conflictInfo: {
+      conflictCount: number;
+      conflictingEvents: Array<{
+        title: string;
+        startTime: string;
+        endTime: string;
+      }>;
+    } | null;
+  }>({
+    isOpen: false,
+    anchorElement: null,
+    conflictInfo: null,
+  });
 
   // Mutation hooks for updating tasks and time blocks
   const updateTask = useUpdateTask();
@@ -335,9 +354,35 @@ export function ScheduleXCalendarComponent() {
     }
   }, [calendarEvents, eventsService]);
 
+  // Helper function to format time
+  const formatTime = useCallback((dateTime: any): string => {
+    if (dateTime instanceof Date) {
+      return dateTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    if ("epochMilliseconds" in dateTime) {
+      return new Date(dateTime.epochMilliseconds).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    return "";
+  }, []);
+
   // Apply conflict classes to calendar event DOM elements
   useEffect(() => {
     if (!calendarEvents) return;
+
+    // Store event handlers for cleanup
+    const eventHandlers = new Map<
+      HTMLElement,
+      {
+        mouseenter: () => void;
+        mouseleave: () => void;
+      }
+    >();
 
     // Small delay to ensure DOM elements are rendered
     const timer = setTimeout(() => {
@@ -345,23 +390,118 @@ export function ScheduleXCalendarComponent() {
         if (event.hasConflict) {
           const eventElement = document.querySelector(
             `[data-event-id="${event.id}"]`,
-          );
+          ) as HTMLElement;
           if (eventElement) {
             eventElement.classList.add("has-conflict");
 
-            // Add tooltip with conflict details
+            // Get computed destructive color value from CSS custom properties
+            const destructiveColor = getComputedStyle(document.documentElement)
+              .getPropertyValue("--destructive")
+              .trim();
+
+            // Convert hex to RGB for alpha channel support in inline styles
+            const hexToRgb = (hex: string) => {
+              const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
+                hex,
+              );
+              return result
+                ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16),
+                  }
+                : null;
+            };
+
+            const rgb = hexToRgb(destructiveColor);
+            if (rgb) {
+              // Override inline styles set by Schedule-X library with computed color values
+              // CSS custom properties don't work in inline styles, so we use rgba() with actual values
+              eventElement.style.setProperty(
+                "background-color",
+                `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12)`,
+                "important",
+              );
+              eventElement.style.setProperty(
+                "border-inline-start",
+                `4px solid rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`,
+                "important",
+              );
+              eventElement.style.setProperty(
+                "background-image",
+                `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05) 10px, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05) 20px)`,
+                "important",
+              );
+            }
+
+            // Add conflict count badge via data attribute
             const conflictCount = event.conflictingEventIds?.length || 0;
             eventElement.setAttribute(
-              "title",
-              `⚠️ Conflicts with ${conflictCount} other time block${conflictCount > 1 ? "s" : ""}`,
+              "data-conflict-count",
+              String(conflictCount),
             );
+
+            // Build conflict info for popover
+            const conflictingEvents =
+              event.conflictingEventIds
+                ?.map((conflictId) => {
+                  const conflictingEvent = calendarEvents.find(
+                    (e) => e.id === conflictId,
+                  );
+                  if (!conflictingEvent) return null;
+
+                  return {
+                    title: conflictingEvent.title,
+                    startTime: formatTime(conflictingEvent.start),
+                    endTime: formatTime(conflictingEvent.end),
+                  };
+                })
+                .filter(
+                  (item): item is NonNullable<typeof item> => item !== null,
+                ) || [];
+
+            // Add hover event listeners for popover
+            const handleMouseEnter = () => {
+              setConflictPopover({
+                isOpen: true,
+                anchorElement: eventElement,
+                conflictInfo: {
+                  conflictCount,
+                  conflictingEvents,
+                },
+              });
+            };
+
+            const handleMouseLeave = () => {
+              setConflictPopover({
+                isOpen: false,
+                anchorElement: null,
+                conflictInfo: null,
+              });
+            };
+
+            eventElement.addEventListener("mouseenter", handleMouseEnter);
+            eventElement.addEventListener("mouseleave", handleMouseLeave);
+
+            // Store handlers for cleanup
+            eventHandlers.set(eventElement, {
+              mouseenter: handleMouseEnter,
+              mouseleave: handleMouseLeave,
+            });
           }
         }
       });
     }, 100);
 
-    return () => clearTimeout(timer);
-  }, [calendarEvents]);
+    return () => {
+      clearTimeout(timer);
+      // Clean up event listeners
+      eventHandlers.forEach((handlers, element) => {
+        element.removeEventListener("mouseenter", handlers.mouseenter);
+        element.removeEventListener("mouseleave", handlers.mouseleave);
+      });
+    };
+  }, [calendarEvents, formatTime]);
 
   const isLoading = tasksLoading || timeBlocksLoading;
 
@@ -399,6 +539,11 @@ export function ScheduleXCalendarComponent() {
           setTimeBlockDetailOpen(false);
           setSelectedTimeBlockId(null);
         }}
+      />
+      <ConflictPopover
+        isOpen={conflictPopover.isOpen}
+        anchorElement={conflictPopover.anchorElement}
+        conflictInfo={conflictPopover.conflictInfo}
       />
     </div>
   );

@@ -335,34 +335,71 @@ button:focus-visible {
    CONFLICT DETECTION STYLING
    =================================== */
 
+/* Pulse animation for conflicts to draw attention */
+@keyframes conflictPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--destructive) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px hsl(var(--destructive) / 0);
+  }
+}
+
+/* Striped pattern animation */
+@keyframes stripeMove {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 0;
+  }
+}
+
 /* Conflict styling for events */
 .sx__event.has-conflict {
-  border-left: 3px solid hsl(var(--destructive)) !important;
-  background-color: hsl(var(--destructive) / 0.1) !important;
+  border-left: 4px solid hsl(var(--destructive)) !important;
+  background-color: hsl(var(--destructive) / 0.12) !important;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    hsl(var(--destructive) / 0.05) 10px,
+    hsl(var(--destructive) / 0.05) 20px
+  ) !important;
+  background-size: 40px 40px;
   position: relative;
+  animation:
+    conflictPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite,
+    stripeMove 20s linear infinite;
 }
 
 .sx__event.has-conflict:hover {
   background-color: hsl(var(--destructive) / 0.2) !important;
-  box-shadow: 0 4px 12px 0 hsl(var(--destructive) / 0.3) !important;
+  box-shadow: 0 4px 16px 0 hsl(var(--destructive) / 0.35) !important;
+  animation: none; /* Stop animation on hover for clarity */
 }
 
-/* Warning icon for conflicted events */
-.sx__event.has-conflict::before {
-  content: "⚠️";
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  font-size: 0.75rem;
-  z-index: 10;
+/* Warning icon badge and count badge removed for cleaner UI */
+/* The red striped background + popover provides sufficient conflict indication */
+.sx__event.has-conflict::before,
+.sx__event.has-conflict::after {
+  display: none;
 }
 
 /* Dark mode adjustments */
 .dark .sx__event.has-conflict {
-  background-color: hsl(var(--destructive) / 0.15) !important;
+  background-color: hsl(var(--destructive) / 0.18) !important;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    hsl(var(--destructive) / 0.08) 10px,
+    hsl(var(--destructive) / 0.08) 20px
+  ) !important;
 }
 
 .dark .sx__event.has-conflict:hover {
-  background-color: hsl(var(--destructive) / 0.25) !important;
-  box-shadow: 0 4px 12px 0 hsl(var(--destructive) / 0.4) !important;
+  background-color: hsl(var(--destructive) / 0.28) !important;
+  box-shadow: 0 4px 16px 0 hsl(var(--destructive) / 0.5) !important;
 }
