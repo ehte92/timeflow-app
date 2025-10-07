@@ -38,6 +38,7 @@ import { useTasks } from "@/lib/query/hooks/tasks";
 import {
   useCreateTimeBlock,
   useTimeBlocks,
+  useUpdateTimeBlock,
 } from "@/lib/query/hooks/time-blocks";
 
 // Form validation schema
@@ -69,6 +70,7 @@ interface TimeBlockFormSheetProps {
   onOpenChange: (open: boolean) => void;
   defaultStartTime?: string; // ISO string
   defaultEndTime?: string; // ISO string
+  timeBlock?: TimeBlock; // For edit mode
   onSuccess?: () => void;
 }
 
@@ -77,9 +79,12 @@ export function TimeBlockFormSheet({
   onOpenChange,
   defaultStartTime,
   defaultEndTime,
+  timeBlock,
   onSuccess,
 }: TimeBlockFormSheetProps) {
+  const isEditMode = !!timeBlock;
   const createTimeBlockMutation = useCreateTimeBlock();
+  const updateTimeBlockMutation = useUpdateTimeBlock();
   const { data: tasksData, isLoading: tasksLoading } = useTasks({
     status: "todo",
     limit: 100,
@@ -113,39 +118,56 @@ export function TimeBlockFormSheet({
   const form = useForm<TimeBlockFormData>({
     resolver: zodResolver(timeBlockFormSchema),
     defaultValues: {
-      title: "",
-      type: "scheduled",
-      startTime: defaultStartTime
-        ? new Date(defaultStartTime).toISOString().slice(0, 16)
-        : "",
-      endTime: defaultEndTime
-        ? new Date(defaultEndTime).toISOString().slice(0, 16)
-        : "",
-      description: "",
-      taskId: undefined,
+      title: timeBlock?.title || "",
+      type: timeBlock?.type || "scheduled",
+      startTime: timeBlock
+        ? new Date(timeBlock.startTime).toISOString().slice(0, 16)
+        : defaultStartTime
+          ? new Date(defaultStartTime).toISOString().slice(0, 16)
+          : "",
+      endTime: timeBlock
+        ? new Date(timeBlock.endTime).toISOString().slice(0, 16)
+        : defaultEndTime
+          ? new Date(defaultEndTime).toISOString().slice(0, 16)
+          : "",
+      description: timeBlock?.description || "",
+      taskId: timeBlock?.taskId || undefined,
     },
   });
 
-  // Reset form when sheet opens with new default times
+  // Reset form when sheet opens
   useEffect(() => {
-    if (open && (defaultStartTime || defaultEndTime)) {
-      form.reset({
-        title: "",
-        type: "scheduled",
-        startTime: defaultStartTime
-          ? new Date(defaultStartTime).toISOString().slice(0, 16)
-          : "",
-        endTime: defaultEndTime
-          ? new Date(defaultEndTime).toISOString().slice(0, 16)
-          : "",
-        description: "",
-        taskId: undefined,
-      });
+    if (open) {
+      if (timeBlock) {
+        // Edit mode: populate with existing time block data
+        form.reset({
+          title: timeBlock.title || "",
+          type: timeBlock.type,
+          startTime: new Date(timeBlock.startTime).toISOString().slice(0, 16),
+          endTime: new Date(timeBlock.endTime).toISOString().slice(0, 16),
+          description: timeBlock.description || "",
+          taskId: timeBlock.taskId || undefined,
+        });
+      } else if (defaultStartTime || defaultEndTime) {
+        // Create mode: use default times
+        form.reset({
+          title: "",
+          type: "scheduled",
+          startTime: defaultStartTime
+            ? new Date(defaultStartTime).toISOString().slice(0, 16)
+            : "",
+          endTime: defaultEndTime
+            ? new Date(defaultEndTime).toISOString().slice(0, 16)
+            : "",
+          description: "",
+          taskId: undefined,
+        });
+      }
       // Reset conflict state when sheet opens
       setDetectedConflicts([]);
       setShowConfirmation(false);
     }
-  }, [open, defaultStartTime, defaultEndTime, form]);
+  }, [open, defaultStartTime, defaultEndTime, timeBlock, form]);
 
   // Watch form values for conflict detection
   const startTime = useWatch({ control: form.control, name: "startTime" });
@@ -155,7 +177,14 @@ export function TimeBlockFormSheet({
   useEffect(() => {
     if (startTime && endTime && existingTimeBlocksData?.timeBlocks) {
       try {
-        const conflicts = findConflicts(existingTimeBlocksData.timeBlocks, {
+        // Exclude current time block from conflict detection when editing
+        const timeBlocksToCheck = isEditMode
+          ? existingTimeBlocksData.timeBlocks.filter(
+              (block) => block.id !== timeBlock?.id,
+            )
+          : existingTimeBlocksData.timeBlocks;
+
+        const conflicts = findConflicts(timeBlocksToCheck, {
           startTime,
           endTime,
         });
@@ -170,7 +199,7 @@ export function TimeBlockFormSheet({
     } else {
       setDetectedConflicts([]);
     }
-  }, [startTime, endTime, existingTimeBlocksData]);
+  }, [startTime, endTime, existingTimeBlocksData, isEditMode, timeBlock]);
 
   const onSubmit = async (data: TimeBlockFormData) => {
     // If conflicts exist and user hasn't confirmed, show confirmation
@@ -189,7 +218,16 @@ export function TimeBlockFormSheet({
         taskId: data.taskId,
       };
 
-      await createTimeBlockMutation.mutateAsync(payload);
+      if (isEditMode && timeBlock) {
+        // Update existing time block
+        await updateTimeBlockMutation.mutateAsync({
+          id: timeBlock.id,
+          data: payload,
+        });
+      } else {
+        // Create new time block
+        await createTimeBlockMutation.mutateAsync(payload);
+      }
 
       // Reset form and close sheet
       form.reset();
@@ -220,11 +258,12 @@ export function TimeBlockFormSheet({
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2 text-2xl">
             <IconCalendarTime className="h-5 w-5 text-primary" />
-            Create Time Block
+            {isEditMode ? "Edit Time Block" : "Create Time Block"}
           </SheetTitle>
           <SheetDescription>
-            Schedule a time block on your calendar. Add details about what
-            you'll be working on.
+            {isEditMode
+              ? "Update the details of your time block."
+              : "Schedule a time block on your calendar. Add details about what you'll be working on."}
           </SheetDescription>
         </SheetHeader>
 
@@ -232,12 +271,13 @@ export function TimeBlockFormSheet({
           onSubmit={form.handleSubmit(onSubmit)}
           className="px-4 space-y-6 mt-6"
         >
-          {createTimeBlockMutation.error && (
+          {(createTimeBlockMutation.error || updateTimeBlockMutation.error) && (
             <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/30">
               <IconAlertCircle className="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
               <div className="text-sm text-red-800 dark:text-red-200">
                 {createTimeBlockMutation.error?.message ||
-                  "Failed to create time block"}
+                  updateTimeBlockMutation.error?.message ||
+                  `Failed to ${isEditMode ? "update" : "create"} time block`}
               </div>
             </div>
           )}
@@ -492,7 +532,10 @@ export function TimeBlockFormSheet({
             </Button>
             <Button
               type="submit"
-              disabled={createTimeBlockMutation.isPending}
+              disabled={
+                createTimeBlockMutation.isPending ||
+                updateTimeBlockMutation.isPending
+              }
               variant={
                 showConfirmation && detectedConflicts.length > 0
                   ? "destructive"
@@ -500,14 +543,22 @@ export function TimeBlockFormSheet({
               }
               className="flex-1 gap-2"
             >
-              {createTimeBlockMutation.isPending && (
+              {(createTimeBlockMutation.isPending ||
+                updateTimeBlockMutation.isPending) && (
                 <IconLoader2 className="h-4 w-4 animate-spin" />
               )}
-              {createTimeBlockMutation.isPending
-                ? "Creating..."
+              {createTimeBlockMutation.isPending ||
+              updateTimeBlockMutation.isPending
+                ? isEditMode
+                  ? "Updating..."
+                  : "Creating..."
                 : showConfirmation && detectedConflicts.length > 0
-                  ? "Create Anyway"
-                  : "Create"}
+                  ? isEditMode
+                    ? "Update Anyway"
+                    : "Create Anyway"
+                  : isEditMode
+                    ? "Update"
+                    : "Create"}
             </Button>
           </div>
         </form>

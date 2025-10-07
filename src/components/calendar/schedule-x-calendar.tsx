@@ -13,6 +13,7 @@ import { createResizePlugin } from "@schedule-x/resize";
 import "temporal-polyfill/global";
 import "@schedule-x/theme-default/dist/index.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { TimeBlockDetailPanel } from "@/components/time-blocks/time-block-detail-panel";
 import { TimeBlockFormSheet } from "@/components/time-blocks/time-block-form-sheet";
 import { CALENDAR_IDS, mergeCalendarEvents } from "@/lib/calendar/events";
 import { useTasks, useUpdateTask } from "@/lib/query/hooks/tasks";
@@ -36,6 +37,10 @@ export function ScheduleXCalendarComponent() {
   const [defaultEndTime, setDefaultEndTime] = useState<string | undefined>(
     undefined,
   );
+  const [selectedTimeBlockId, setSelectedTimeBlockId] = useState<string | null>(
+    null,
+  );
+  const [timeBlockDetailOpen, setTimeBlockDetailOpen] = useState(false);
 
   // Mutation hooks for updating tasks and time blocks
   const updateTask = useUpdateTask();
@@ -80,7 +85,21 @@ export function ScheduleXCalendarComponent() {
 
   const handleEventClick = useCallback((calendarEvent: any) => {
     console.log("Event clicked:", calendarEvent);
-    // TODO: Open event details modal/sidebar in future task
+
+    // Parse event ID to determine type
+    const eventId = String(calendarEvent.id);
+    const isTask = eventId.startsWith("task-");
+    const isTimeBlock = eventId.startsWith("timeblock-");
+
+    if (isTimeBlock) {
+      // Extract time block ID and open detail panel
+      const timeBlockId = eventId.replace("timeblock-", "");
+      setSelectedTimeBlockId(timeBlockId);
+      setTimeBlockDetailOpen(true);
+    } else if (isTask) {
+      // TODO: Open task detail panel (future enhancement)
+      console.log("Task clicked - task detail panel not yet implemented");
+    }
   }, []);
 
   const handleEventUpdate = useCallback(
@@ -370,6 +389,16 @@ export function ScheduleXCalendarComponent() {
         onOpenChange={setTimeBlockDialogOpen}
         defaultStartTime={defaultStartTime}
         defaultEndTime={defaultEndTime}
+      />
+      <TimeBlockDetailPanel
+        timeBlockId={selectedTimeBlockId}
+        open={timeBlockDetailOpen}
+        onOpenChange={setTimeBlockDetailOpen}
+        onSuccess={() => {
+          // Refetch data to update calendar
+          setTimeBlockDetailOpen(false);
+          setSelectedTimeBlockId(null);
+        }}
       />
     </div>
   );

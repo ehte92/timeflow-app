@@ -71,6 +71,10 @@ jest.mock("@/components/calendar/calendar-toolbar", () => ({
   CalendarToolbar: () => <div data-testid="calendar-toolbar">Toolbar</div>,
 }));
 
+jest.mock("@/components/calendar/calendar-help-banner", () => ({
+  CalendarHelpBanner: () => null,
+}));
+
 jest.mock("@/components/time-blocks/time-block-form-sheet", () => ({
   TimeBlockFormSheet: ({ open, defaultStartTime, defaultEndTime }: any) => {
     if (!open) return null;
@@ -81,6 +85,10 @@ jest.mock("@/components/time-blocks/time-block-form-sheet", () => ({
       </div>
     );
   },
+}));
+
+jest.mock("@/components/time-blocks/time-block-detail-panel", () => ({
+  TimeBlockDetailPanel: () => null,
 }));
 
 describe("ScheduleXCalendarComponent", () => {

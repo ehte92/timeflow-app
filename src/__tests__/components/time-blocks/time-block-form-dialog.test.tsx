@@ -38,6 +38,13 @@ describe("TimeBlockFormSheet", () => {
       error: null,
     });
 
+    // Mock useUpdateTimeBlock
+    (timeBlocksHooks.useUpdateTimeBlock as jest.Mock).mockReturnValue({
+      mutateAsync: mockMutateAsync,
+      isPending: false,
+      error: null,
+    });
+
     // Mock useTimeBlocks for conflict detection
     (timeBlocksHooks.useTimeBlocks as jest.Mock).mockReturnValue({
       data: {
