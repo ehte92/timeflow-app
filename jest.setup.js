@@ -33,6 +33,15 @@ if (typeof window !== "undefined") {
   if (!Element.prototype.scrollIntoView) {
     Element.prototype.scrollIntoView = jest.fn();
   }
+
+  // Polyfill for ResizeObserver (required for Radix UI Checkbox and other components)
+  if (!window.ResizeObserver) {
+    window.ResizeObserver = jest.fn().mockImplementation(() => ({
+      observe: jest.fn(),
+      unobserve: jest.fn(),
+      disconnect: jest.fn(),
+    }));
+  }
 }
 
 // Mock next/router if needed in tests
