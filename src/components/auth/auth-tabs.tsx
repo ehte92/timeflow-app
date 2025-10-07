@@ -19,10 +19,10 @@ export function AuthTabs() {
       {/* Sign In Form */}
       <TabsContent value="signin" className="mt-8 space-y-6">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Welcome back
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             Enter your credentials to access your account
           </p>
         </div>
@@ -33,10 +33,10 @@ export function AuthTabs() {
       {/* Sign Up Form */}
       <TabsContent value="signup" className="mt-8 space-y-6">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Create your account
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             Start your journey to peak productivity
           </p>
         </div>
