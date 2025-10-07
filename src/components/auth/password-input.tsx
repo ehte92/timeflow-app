@@ -47,7 +47,7 @@ export function PasswordInput({
           disabled={disabled}
           minLength={minLength}
           autoComplete={autoComplete}
-          className="pl-10 pr-10"
+          className="pl-10 pr-10 h-11 md:h-10"
         />
         <button
           type="button"

@@ -134,15 +134,15 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full">
+      <main className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-4 sm:px-6 lg:px-8 w-full">
         {/* Welcome Section */}
-        <Card className="p-10 mb-8 border-t-4 border-t-emerald-500">
+        <Card className="p-4 sm:p-6 lg:p-10 mb-4 sm:mb-6 lg:mb-8 border-t-4 border-t-emerald-500">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">
                 Welcome back, {session.user.name}!
               </h1>
-              <p className="text-base text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Here's what's happening with your tasks today.
               </p>
             </div>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
           {statsLoading ? (
             <>
               <StatCardSkeleton />

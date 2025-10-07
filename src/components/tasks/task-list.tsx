@@ -185,10 +185,10 @@ export function TaskList({
         </div>
 
         {/* Mobile Card Skeleton */}
-        <div className="block lg:hidden space-y-5">
+        <div className="block lg:hidden space-y-3 sm:space-y-5">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="border-l-4 border-l-muted animate-pulse">
-              <CardHeader className="p-6 pb-3">
+              <CardHeader className="p-4 sm:p-6 pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
                     <div className="mt-0.5 size-8 rounded-md bg-muted"></div>
@@ -198,7 +198,7 @@ export function TaskList({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6 pt-0">
+              <CardContent className="p-4 sm:p-6 pt-0">
                 <div className="h-5 bg-muted rounded w-1/2"></div>
               </CardContent>
             </Card>
@@ -310,7 +310,7 @@ export function TaskList({
                     <button
                       type="button"
                       onClick={() => handleToggleStatus(task)}
-                      className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                      className="p-2 lg:p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
                       disabled={toggleStatusMutation.isPending}
                       title={
                         isCompleted ? "Mark as incomplete" : "Mark as complete"
@@ -393,7 +393,7 @@ export function TaskList({
                           variant="ghost"
                           size="sm"
                           onClick={() => onEditTask(task)}
-                          className="h-8 w-8 p-0"
+                          className="h-9 w-9 lg:h-8 lg:w-8 p-0"
                         >
                           <IconEdit className="size-4" />
                         </Button>
@@ -402,7 +402,7 @@ export function TaskList({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteClick(task.id)}
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                        className="h-9 w-9 lg:h-8 lg:w-8 p-0 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
                         disabled={deleteTaskMutation.isPending}
                       >
                         <IconTrash
@@ -421,7 +421,7 @@ export function TaskList({
       </div>
 
       {/* Mobile Card View */}
-      <div className="block lg:hidden space-y-5">
+      <div className="block lg:hidden space-y-3 sm:space-y-5">
         {tasks.map((task) => {
           const StatusIcon = statusIcons[task.status];
           const isCompleted = task.status === "completed";
@@ -436,18 +436,18 @@ export function TaskList({
               } ${priorityBorderColors[task.priority]}`}
             >
               <CardHeader
-                className="p-6 pb-3"
+                className="p-4 sm:p-6 pb-3"
                 onClick={() => setSelectedTaskId(task.id)}
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3 flex-1">
+                  <div className="flex items-start space-x-3 flex-1 min-w-0">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleToggleStatus(task);
                       }}
-                      className="mt-0.5 p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                      className="mt-0.5 p-2 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-95 transition-all duration-200 flex-shrink-0"
                       disabled={toggleStatusMutation.isPending}
                       title={
                         isCompleted ? "Mark as incomplete" : "Mark as complete"
@@ -468,7 +468,7 @@ export function TaskList({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3
-                          className={`text-2xl font-semibold ${
+                          className={`text-lg sm:text-xl font-semibold break-words ${
                             isCompleted
                               ? "line-through text-muted-foreground"
                               : "text-foreground"
@@ -481,7 +481,7 @@ export function TaskList({
                           const category = getCategoryById(task.categoryId);
                           return category ? (
                             <Badge
-                              className="text-white"
+                              className="text-white text-xs"
                               style={{ backgroundColor: category.color }}
                             >
                               {category.name}
@@ -492,7 +492,7 @@ export function TaskList({
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2 ml-4">
+                  <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                     {onEditTask && (
                       <Button
                         variant="ghost"
@@ -501,7 +501,7 @@ export function TaskList({
                           e.stopPropagation();
                           onEditTask(task);
                         }}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-10 w-10 sm:h-9 sm:w-9 p-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                       >
                         <IconEdit className="size-4" />
                       </Button>
@@ -513,7 +513,7 @@ export function TaskList({
                         e.stopPropagation();
                         handleDeleteClick(task.id);
                       }}
-                      className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-10 w-10 sm:h-9 sm:w-9 p-0 text-destructive hover:text-destructive/90 hover:bg-destructive/10 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                       disabled={deleteTaskMutation.isPending}
                     >
                       <IconTrash
@@ -526,8 +526,8 @@ export function TaskList({
                 </div>
               </CardHeader>
 
-              <CardContent className="p-6 pt-0">
-                <div className="flex items-center justify-between">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   {task.dueDate && (
                     <span
                       className={`text-sm font-medium ${

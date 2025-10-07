@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  IconAdjustmentsHorizontal,
   IconCalendar,
   IconCategory,
   IconCircle,
@@ -9,17 +10,26 @@ import {
   IconClock,
   IconFlag,
   IconPlus,
+  IconX,
 } from "@tabler/icons-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { TaskDetailPanel } from "@/components/tasks/task-detail-panel";
 import { TaskList } from "@/components/tasks/task-list";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   FilterDropdown,
   type FilterOption,
 } from "@/components/ui/filter-dropdown";
 import { SearchInput } from "@/components/ui/search-input";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SortSelect } from "@/components/ui/sort-select";
 import type { Task, TaskPriority, TaskStatus } from "@/lib/db/schema/tasks";
@@ -47,6 +57,7 @@ export function TasksPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<TaskSortBy>("createdAt");
   const [sortOrder, setSortOrder] = useState<TaskSortOrder>("desc");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const categories = categoriesData?.categories || [];
 
@@ -187,6 +198,112 @@ export function TasksPageContent() {
         <div className="flex-1">
           <h1 className="text-lg font-semibold">Tasks</h1>
         </div>
+        <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" className="relative">
+              <IconAdjustmentsHorizontal className="size-4" />
+              {getActiveFilterCount() > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center p-0 text-xs">
+                  {getActiveFilterCount()}
+                </Badge>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full sm:max-w-md">
+            <SheetHeader>
+              <SheetTitle>Filters & Sort</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6 space-y-6">
+              {/* Sort Section */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Sort By</h3>
+                <SortSelect
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSortChange={handleSortChange}
+                />
+              </div>
+
+              {/* Filter Sections */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Status</h3>
+                <div className="w-full">
+                  <FilterDropdown
+                    label="Status"
+                    icon={<IconCircle className="size-4" />}
+                    value={statusFilter}
+                    options={statusOptions}
+                    onChange={(value) =>
+                      setStatusFilter(value as TaskStatus | "all")
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Priority</h3>
+                <div className="w-full">
+                  <FilterDropdown
+                    label="Priority"
+                    icon={<IconFlag className="size-4" />}
+                    value={priorityFilter}
+                    options={priorityOptions}
+                    onChange={(value) =>
+                      setPriorityFilter(value as TaskPriority | "all")
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Category</h3>
+                <div className="w-full">
+                  <FilterDropdown
+                    label="Category"
+                    icon={<IconCategory className="size-4" />}
+                    value={categoryFilter}
+                    options={categoryOptions}
+                    onChange={setCategoryFilter}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Due Date</h3>
+                <div className="w-full">
+                  <FilterDropdown
+                    label="Due Date"
+                    icon={<IconCalendar className="size-4" />}
+                    value={dateRangeFilter || "all"}
+                    options={dateRangeOptions}
+                    onChange={(value) =>
+                      setDateRangeFilter(
+                        value === "all"
+                          ? "all"
+                          : (value as TaskFilters["dateRange"]),
+                      )
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Clear All Button */}
+              {getActiveFilterCount() > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    clearAllFilters();
+                    setMobileFiltersOpen(false);
+                  }}
+                  className="w-full"
+                >
+                  <IconX className="size-4 mr-2" />
+                  Clear All Filters
+                </Button>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
         <Button onClick={() => setIsCreating(true)} size="sm">
           <IconPlus className="size-4" />
         </Button>
@@ -214,20 +331,30 @@ export function TasksPageContent() {
           {/* Task List */}
           <div>
             <div className="bg-card rounded-lg shadow">
-              <div className="p-8">
+              <div className="p-4 sm:p-6 lg:p-8">
                 <div className="space-y-4">
-                  {/* Toolbar - Compact Single Row */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-1.5">
+                  {/* Mobile: Search only */}
+                  <div className="lg:hidden">
+                    <SearchInput
+                      value={searchQuery}
+                      onChange={setSearchQuery}
+                      placeholder="Search tasks..."
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Desktop: Toolbar - Compact Single Row */}
+                  <div className="hidden lg:flex lg:items-center gap-2">
                     {/* Search Bar */}
                     <SearchInput
                       value={searchQuery}
                       onChange={setSearchQuery}
                       placeholder="Search tasks..."
-                      className="w-full sm:w-56"
+                      className="w-56"
                     />
 
                     {/* Filters */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                    <div className="flex items-center gap-1.5">
                       <SortSelect
                         sortBy={sortBy}
                         sortOrder={sortOrder}

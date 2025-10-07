@@ -154,7 +154,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               required
               disabled={isPending}
               autoComplete="name"
-              className="pl-10"
+              className="pl-10 h-11 md:h-10"
             />
           </div>
         </div>
@@ -179,7 +179,8 @@ export function AuthForm({ mode }: AuthFormProps) {
             required
             disabled={isPending}
             autoComplete="email"
-            className="pl-10 pr-10"
+            inputMode="email"
+            className="pl-10 pr-10 h-11 md:h-10"
           />
           {email && (
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
