@@ -28,8 +28,20 @@ const timeBlockFilterSchema = z.object({
   endDate: z.string().datetime().optional(),
   sortBy: z.enum(["startTime", "endTime", "createdAt"]).default("startTime"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
-  limit: z.string().default("100").transform(Number),
-  offset: z.string().default("0").transform(Number),
+  limit: z
+    .string()
+    .default("100")
+    .transform(Number)
+    .refine((val) => val > 0 && val <= 100, {
+      message: "Limit must be between 1 and 100",
+    }),
+  offset: z
+    .string()
+    .default("0")
+    .transform(Number)
+    .refine((val) => val >= 0, {
+      message: "Offset must be 0 or greater",
+    }),
 });
 
 export async function GET(request: NextRequest) {

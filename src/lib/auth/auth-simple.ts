@@ -16,10 +16,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log("Authorize called with:", credentials?.email);
-
         if (!credentials?.email || !credentials?.password) {
-          console.log("Missing credentials");
           return null;
         }
 
@@ -30,14 +27,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             .where(eq(users.email, credentials.email as string))
             .limit(1);
 
-          console.log("User found:", user.length > 0);
-
           if (!user.length) {
             return null;
           }
 
           if (!user[0].password) {
-            console.log("User has no password");
             return null;
           }
 
@@ -45,8 +39,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             credentials.password as string,
             user[0].password,
           );
-
-          console.log("Password valid:", isPasswordValid);
 
           if (!isPasswordValid) {
             return null;
@@ -58,7 +50,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: user[0].name,
           };
         } catch (error) {
-          console.error("Auth error:", error);
+          // Only log errors in development, without sensitive data
+          if (process.env.NODE_ENV === "development") {
+            console.error(
+              "Auth error:",
+              error instanceof Error ? error.message : "Unknown error",
+            );
+          }
           return null;
         }
       },
