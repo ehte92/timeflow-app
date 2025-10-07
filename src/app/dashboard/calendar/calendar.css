@@ -330,3 +330,39 @@ button:focus-visible {
 .sx__day-grid {
   overflow: visible !important;
 }
+
+/* ===================================
+   CONFLICT DETECTION STYLING
+   =================================== */
+
+/* Conflict styling for events */
+.sx__event.has-conflict {
+  border-left: 3px solid hsl(var(--destructive)) !important;
+  background-color: hsl(var(--destructive) / 0.1) !important;
+  position: relative;
+}
+
+.sx__event.has-conflict:hover {
+  background-color: hsl(var(--destructive) / 0.2) !important;
+  box-shadow: 0 4px 12px 0 hsl(var(--destructive) / 0.3) !important;
+}
+
+/* Warning icon for conflicted events */
+.sx__event.has-conflict::before {
+  content: "⚠️";
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  font-size: 0.75rem;
+  z-index: 10;
+}
+
+/* Dark mode adjustments */
+.dark .sx__event.has-conflict {
+  background-color: hsl(var(--destructive) / 0.15) !important;
+}
+
+.dark .sx__event.has-conflict:hover {
+  background-color: hsl(var(--destructive) / 0.25) !important;
+  box-shadow: 0 4px 12px 0 hsl(var(--destructive) / 0.4) !important;
+}

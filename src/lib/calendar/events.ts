@@ -1,6 +1,7 @@
 import { Temporal } from "temporal-polyfill";
 import type { Task } from "@/lib/db/schema/tasks";
 import type { TimeBlock } from "@/lib/db/schema/time-blocks";
+import { findConflicts } from "./conflicts";
 
 // ScheduleX calendar event type
 export interface CalendarEvent {
@@ -10,6 +11,9 @@ export interface CalendarEvent {
   title: string;
   description?: string;
   calendarId: string; // Used for color coding
+  // Conflict detection
+  hasConflict?: boolean;
+  conflictingEventIds?: string[];
 }
 
 // Calendar IDs for color coding
@@ -93,7 +97,10 @@ export function transformTaskToEvent(task: Task): CalendarEvent | null {
 }
 
 // Transform a time block into a calendar event
-export function transformTimeBlockToEvent(timeBlock: TimeBlock): CalendarEvent {
+export function transformTimeBlockToEvent(
+  timeBlock: TimeBlock,
+  conflictingBlocks: TimeBlock[] = [],
+): CalendarEvent {
   const startDate = new Date(timeBlock.startTime);
   const endDate = new Date(timeBlock.endTime);
 
@@ -122,6 +129,9 @@ export function transformTimeBlockToEvent(timeBlock: TimeBlock): CalendarEvent {
     endDate.getTime(),
   ).toZonedDateTimeISO("UTC");
 
+  const hasConflict = conflictingBlocks.length > 0;
+  const conflictingEventIds = conflictingBlocks.map((b) => `timeblock-${b.id}`);
+
   return {
     id: `timeblock-${timeBlock.id}`,
     start,
@@ -129,6 +139,8 @@ export function transformTimeBlockToEvent(timeBlock: TimeBlock): CalendarEvent {
     title: timeBlock.title || `${timeBlock.type} time block`,
     description: timeBlock.description || undefined,
     calendarId,
+    hasConflict,
+    conflictingEventIds: hasConflict ? conflictingEventIds : undefined,
   };
 }
 
@@ -141,7 +153,15 @@ export function mergeCalendarEvents(
     .map(transformTaskToEvent)
     .filter((event): event is CalendarEvent => event !== null);
 
-  const timeBlockEvents = timeBlocks.map(transformTimeBlockToEvent);
+  // Calculate conflicts for each time block
+  const timeBlockEvents = timeBlocks.map((block) => {
+    const conflicts = findConflicts(timeBlocks, {
+      startTime: new Date(block.startTime).toISOString(),
+      endTime: new Date(block.endTime).toISOString(),
+      id: block.id,
+    });
+    return transformTimeBlockToEvent(block, conflicts);
+  });
 
   return [...taskEvents, ...timeBlockEvents];
 }

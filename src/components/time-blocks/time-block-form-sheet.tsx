@@ -14,14 +14,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,6 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { findConflicts } from "@/lib/calendar/conflicts";
 import type { TimeBlock } from "@/lib/db/schema/time-blocks";
@@ -65,7 +64,7 @@ const timeBlockFormSchema = z
 
 type TimeBlockFormData = z.infer<typeof timeBlockFormSchema>;
 
-interface TimeBlockFormDialogProps {
+interface TimeBlockFormSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultStartTime?: string; // ISO string
@@ -73,13 +72,13 @@ interface TimeBlockFormDialogProps {
   onSuccess?: () => void;
 }
 
-export function TimeBlockFormDialog({
+export function TimeBlockFormSheet({
   open,
   onOpenChange,
   defaultStartTime,
   defaultEndTime,
   onSuccess,
-}: TimeBlockFormDialogProps) {
+}: TimeBlockFormSheetProps) {
   const createTimeBlockMutation = useCreateTimeBlock();
   const { data: tasksData, isLoading: tasksLoading } = useTasks({
     status: "todo",
@@ -127,7 +126,7 @@ export function TimeBlockFormDialog({
     },
   });
 
-  // Reset form when dialog opens with new default times
+  // Reset form when sheet opens with new default times
   useEffect(() => {
     if (open && (defaultStartTime || defaultEndTime)) {
       form.reset({
@@ -142,7 +141,7 @@ export function TimeBlockFormDialog({
         description: "",
         taskId: undefined,
       });
-      // Reset conflict state when dialog opens
+      // Reset conflict state when sheet opens
       setDetectedConflicts([]);
       setShowConfirmation(false);
     }
@@ -192,7 +191,7 @@ export function TimeBlockFormDialog({
 
       await createTimeBlockMutation.mutateAsync(payload);
 
-      // Reset form and close dialog
+      // Reset form and close sheet
       form.reset();
       setShowConfirmation(false);
       setDetectedConflicts([]);
@@ -210,30 +209,29 @@ export function TimeBlockFormDialog({
 
   const handleCancel = () => {
     form.reset();
+    setDetectedConflicts([]);
+    setShowConfirmation(false);
     onOpenChange(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
-      handleCancel();
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onKeyDown={handleKeyDown} className="sm:max-w-[540px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2 text-2xl">
             <IconCalendarTime className="h-5 w-5 text-primary" />
             Create Time Block
-          </DialogTitle>
-          <DialogDescription>
+          </SheetTitle>
+          <SheetDescription>
             Schedule a time block on your calendar. Add details about what
             you'll be working on.
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="px-4 space-y-6 mt-6"
+        >
           {createTimeBlockMutation.error && (
             <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/30">
               <IconAlertCircle className="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
@@ -481,12 +479,14 @@ export function TimeBlockFormDialog({
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          {/* Action Buttons */}
+          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t">
             <Button
               type="button"
               variant="outline"
               onClick={handleCancel}
               disabled={createTimeBlockMutation.isPending}
+              className="flex-1"
             >
               Cancel
             </Button>
@@ -498,7 +498,7 @@ export function TimeBlockFormDialog({
                   ? "destructive"
                   : "default"
               }
-              className="gap-2"
+              className="flex-1 gap-2"
             >
               {createTimeBlockMutation.isPending && (
                 <IconLoader2 className="h-4 w-4 animate-spin" />
@@ -509,9 +509,9 @@ export function TimeBlockFormDialog({
                   ? "Create Anyway"
                   : "Create"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -71,8 +71,8 @@ jest.mock("@/components/calendar/calendar-toolbar", () => ({
   CalendarToolbar: () => <div data-testid="calendar-toolbar">Toolbar</div>,
 }));
 
-jest.mock("@/components/time-blocks/time-block-form-dialog", () => ({
-  TimeBlockFormDialog: ({ open, defaultStartTime, defaultEndTime }: any) => {
+jest.mock("@/components/time-blocks/time-block-form-sheet", () => ({
+  TimeBlockFormSheet: ({ open, defaultStartTime, defaultEndTime }: any) => {
     if (!open) return null;
     return (
       <div data-testid="time-block-dialog">

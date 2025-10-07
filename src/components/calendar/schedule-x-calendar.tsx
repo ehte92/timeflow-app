@@ -13,7 +13,7 @@ import { createResizePlugin } from "@schedule-x/resize";
 import "temporal-polyfill/global";
 import "@schedule-x/theme-default/dist/index.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { TimeBlockFormDialog } from "@/components/time-blocks/time-block-form-dialog";
+import { TimeBlockFormSheet } from "@/components/time-blocks/time-block-form-sheet";
 import { CALENDAR_IDS, mergeCalendarEvents } from "@/lib/calendar/events";
 import { useTasks, useUpdateTask } from "@/lib/query/hooks/tasks";
 import {
@@ -316,6 +316,34 @@ export function ScheduleXCalendarComponent() {
     }
   }, [calendarEvents, eventsService]);
 
+  // Apply conflict classes to calendar event DOM elements
+  useEffect(() => {
+    if (!calendarEvents) return;
+
+    // Small delay to ensure DOM elements are rendered
+    const timer = setTimeout(() => {
+      calendarEvents.forEach((event) => {
+        if (event.hasConflict) {
+          const eventElement = document.querySelector(
+            `[data-event-id="${event.id}"]`,
+          );
+          if (eventElement) {
+            eventElement.classList.add("has-conflict");
+
+            // Add tooltip with conflict details
+            const conflictCount = event.conflictingEventIds?.length || 0;
+            eventElement.setAttribute(
+              "title",
+              `⚠️ Conflicts with ${conflictCount} other time block${conflictCount > 1 ? "s" : ""}`,
+            );
+          }
+        }
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [calendarEvents]);
+
   const isLoading = tasksLoading || timeBlocksLoading;
 
   if (isLoading) {
@@ -337,7 +365,7 @@ export function ScheduleXCalendarComponent() {
       <div className="flex-1 min-h-0 overflow-auto">
         <ScheduleXCalendar calendarApp={calendar} />
       </div>
-      <TimeBlockFormDialog
+      <TimeBlockFormSheet
         open={timeBlockDialogOpen}
         onOpenChange={setTimeBlockDialogOpen}
         defaultStartTime={defaultStartTime}

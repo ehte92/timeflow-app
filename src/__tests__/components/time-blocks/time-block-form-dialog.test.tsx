@@ -5,7 +5,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TimeBlockFormDialog } from "@/components/time-blocks/time-block-form-dialog";
+import { TimeBlockFormSheet } from "@/components/time-blocks/time-block-form-sheet";
 import * as tasksHooks from "@/lib/query/hooks/tasks";
 import * as timeBlocksHooks from "@/lib/query/hooks/time-blocks";
 
@@ -13,7 +13,7 @@ import * as timeBlocksHooks from "@/lib/query/hooks/time-blocks";
 jest.mock("@/lib/query/hooks/time-blocks");
 jest.mock("@/lib/query/hooks/tasks");
 
-describe("TimeBlockFormDialog", () => {
+describe("TimeBlockFormSheet", () => {
   let queryClient: QueryClient;
   const user = userEvent.setup();
   const mockOnOpenChange = jest.fn();
@@ -36,6 +36,15 @@ describe("TimeBlockFormDialog", () => {
       mutateAsync: mockMutateAsync,
       isPending: false,
       error: null,
+    });
+
+    // Mock useTimeBlocks for conflict detection
+    (timeBlocksHooks.useTimeBlocks as jest.Mock).mockReturnValue({
+      data: {
+        timeBlocks: [],
+        count: 0,
+      },
+      isLoading: false,
     });
 
     // Mock useTasks for task dropdown
@@ -62,7 +71,7 @@ describe("TimeBlockFormDialog", () => {
   const renderComponent = (props = {}) => {
     return render(
       <QueryClientProvider client={queryClient}>
-        <TimeBlockFormDialog
+        <TimeBlockFormSheet
           open={true}
           onOpenChange={mockOnOpenChange}
           {...props}
@@ -429,7 +438,7 @@ describe("TimeBlockFormDialog", () => {
     // Fill some data
     rerender(
       <QueryClientProvider client={queryClient}>
-        <TimeBlockFormDialog
+        <TimeBlockFormSheet
           open={true}
           onOpenChange={mockOnOpenChange}
           defaultStartTime="2025-10-07T09:00:00.000Z"
@@ -444,7 +453,7 @@ describe("TimeBlockFormDialog", () => {
     // Close and reopen with new times
     rerender(
       <QueryClientProvider client={queryClient}>
-        <TimeBlockFormDialog
+        <TimeBlockFormSheet
           open={true}
           onOpenChange={mockOnOpenChange}
           defaultStartTime="2025-10-07T14:00:00.000Z"
