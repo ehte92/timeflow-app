@@ -25,7 +25,13 @@ import {
 import { CalendarHelpBanner } from "./calendar-help-banner";
 import { CalendarToolbar } from "./calendar-toolbar";
 
-export function ScheduleXCalendarComponent() {
+interface ScheduleXCalendarComponentProps {
+  onCreateTimeBlock?: () => void;
+}
+
+export function ScheduleXCalendarComponent({
+  onCreateTimeBlock: externalOnCreateTimeBlock,
+}: ScheduleXCalendarComponentProps = {}) {
   const eventsService = useMemo(() => createEventsServicePlugin(), []);
   const calendarControls = useMemo(() => createCalendarControlsPlugin(), []);
   const dragAndDrop = useMemo(() => createDragAndDropPlugin(15), []); // 15-minute intervals
@@ -226,6 +232,12 @@ export function ScheduleXCalendarComponent() {
 
   // Handle manual time block creation from toolbar button
   const handleCreateTimeBlock = useCallback(() => {
+    // Use external handler if provided (for mobile header integration)
+    if (externalOnCreateTimeBlock) {
+      externalOnCreateTimeBlock();
+      return;
+    }
+
     // Default to current time rounded to next hour
     const now = new Date();
     const nextHour = new Date(now);
@@ -236,7 +248,7 @@ export function ScheduleXCalendarComponent() {
     setDefaultStartTime(nextHour.toISOString());
     setDefaultEndTime(hourAfter.toISOString());
     setTimeBlockDialogOpen(true);
-  }, []);
+  }, [externalOnCreateTimeBlock]);
 
   const calendar = useNextCalendarApp({
     views: [createViewMonthGrid(), createViewWeek(), createViewDay()],

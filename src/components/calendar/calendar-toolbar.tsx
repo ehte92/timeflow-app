@@ -152,7 +152,7 @@ export function CalendarToolbar({
   }, [selectedDate, currentView]);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 border-b border-border/50 bg-gradient-to-r from-background to-muted/20">
+    <div className="hidden lg:flex flex-wrap items-center justify-between gap-4 px-6 py-4 border-b border-border/50 bg-gradient-to-r from-background to-muted/20">
       {/* Left: Navigation & Actions */}
       <div className="flex items-center gap-2">
         <Button

@@ -32,8 +32,8 @@ const timeBlockFilterSchema = z.object({
     .string()
     .default("100")
     .transform(Number)
-    .refine((val) => val > 0 && val <= 100, {
-      message: "Limit must be between 1 and 100",
+    .refine((val) => val > 0 && val <= 1000, {
+      message: "Limit must be between 1 and 1000",
     }),
   offset: z
     .string()
